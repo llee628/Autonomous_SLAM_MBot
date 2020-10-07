@@ -2,6 +2,7 @@
 #include <slam/occupancy_grid.hpp>
 #include <lcmtypes/pose_xyt_t.hpp>
 #include <cassert>
+#include <common/angle_functions.hpp>
 
 
 ParticleFilter::ParticleFilter(int numParticles)
@@ -14,7 +15,30 @@ ParticleFilter::ParticleFilter(int numParticles)
 
 void ParticleFilter::initializeFilterAtPose(const pose_xyt_t& pose)
 {
-    ///////////// TODO: Implement your method for initializing the particles in the particle filter /////////////////
+   ///////////// TODO: Implement your method for initializing the particles in the particle filter /////////////////
+    
+    // Initialize filter with uniformly weighted particles drawn from pose distribution
+    double sampleWeight = 1.0 / kNumParticles_;
+    
+    posteriorPose_ = pose;
+    
+    std::random_device rd;
+    std::mt19937 generator(rd());
+
+    std::normal_distribution<> dist(0.0, 0.001);
+    
+    for(auto& p : posterior_)
+    {
+        p.pose.x      = posteriorPose_.x + dist(generator);
+        p.pose.y      = posteriorPose_.y + dist(generator);
+        p.pose.theta  = wrap_to_pi(posteriorPose_.theta + dist(generator));
+        p.pose.utime  = pose.utime;
+        p.parent_pose = p.pose;
+        p.weight      = sampleWeight;
+    }
+    
+    posterior_.back().pose = pose;
+
 }
 
 
@@ -87,6 +111,12 @@ std::vector<particle_t> ParticleFilter::computeProposalDistribution(const std::v
 {
     //////////// TODO: Implement your algorithm for creating the proposal distribution by sampling from the ActionModel
     std::vector<particle_t> proposal;
+    
+    for(auto& p : prior)
+    {
+        proposal.push_back(actionModel_.applyAction(p));
+    }
+    
     return proposal;
 }
 
