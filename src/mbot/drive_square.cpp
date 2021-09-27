@@ -8,7 +8,7 @@
 
 int main(int argc, char** argv)
 {std::cout << "here" <<std::endl;
-    int numTimes = 4;
+    int numTimes = 1;
     
     if(argc > 1)
     {
@@ -24,7 +24,7 @@ int main(int argc, char** argv)
     
     nextPose.x = 1.0f;
     nextPose.y = 0.0f;
-    nextPose.theta = M_PI_2;
+    nextPose.theta = 0;
     for(int n = 0; n < numTimes; ++n)
     {
         path.path[4*n] = nextPose;
@@ -32,7 +32,7 @@ int main(int argc, char** argv)
     
     nextPose.x = 1.0f;
     nextPose.y = 1.0f;
-    nextPose.theta = 0;
+    nextPose.theta = M_PI_2;
     for(int n = 0; n < numTimes; ++n)
     {
         path.path[4*n + 1] = nextPose;
