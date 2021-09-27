@@ -18,7 +18,7 @@
 #include "maneuver_controller.h"
 
 #define Vmax 0.25
-#define Wmax M_PI/4
+#define Wmax M_PI
 
 
 /////////////////////// TODO: /////////////////////////////
@@ -45,8 +45,8 @@ public:
     /**
     * Send the command to go straight.
     */
-    const float Kv = 1;
-    const float Kw = 0.8;
+    const float Kv = 0.8;
+    const float Kw = 1;
     float dx = target.x - pose.x;
     float dy = target.y - pose.y;
     float d = sqrt(pow(dx, 2) + pow(dy, 2));
@@ -65,6 +65,7 @@ public:
     }
     else{}
     return {0, v, w};
+    //return {0, 0.25, 0};
     }
 
     virtual bool target_reached(const pose_xyt_t& pose, const pose_xyt_t& target)  override
@@ -93,6 +94,45 @@ public:
     }
     else{}
     return {0, 0, w};
+    //return {0, 0, M_PI/4};
+    }
+
+    virtual bool target_reached(const pose_xyt_t& pose, const pose_xyt_t& target)  override
+    {
+        //float dx = target.x - pose.x;
+        //float dy = target.y - pose.y;
+        //float target_heading = atan2(dy, dx);
+        //return (fabs(angle_diff(pose.theta, target_heading)) < 0.07);
+        return (fabs(angle_diff(pose.theta, target.theta)) < 0.07);
+        //only consider the orientation but do not care the position
+
+    }
+};
+
+class RotateManeuverController : public ManeuverControllerBase
+{
+public:
+    RotateManeuverController() = default;
+    virtual mbot_motor_command_t get_command(const pose_xyt_t& pose, const pose_xyt_t& target) override
+    {
+        /**
+        * Send the command to turn.
+        */
+        const float Kw = 1;
+        float dx = target.x - pose.x;
+        float dy = target.y - pose.y;
+        float target_heading = atan2(dy, dx);
+        float alpha = angle_diff(target_heading, pose.theta);
+        float w = Kw * alpha;
+        if(w<-Wmax){
+            w = -Wmax;
+        }
+        else if(w>Wmax){
+            w = Wmax;
+        }
+        else{}
+        return {0, 0, w};
+        //return {0, 0, M_PI/4};
     }
 
     virtual bool target_reached(const pose_xyt_t& pose, const pose_xyt_t& target)  override
@@ -100,10 +140,7 @@ public:
         float dx = target.x - pose.x;
         float dy = target.y - pose.y;
         float target_heading = atan2(dy, dx);
-        return (fabs(angle_diff(pose.theta, target_heading)) < 0.07);
-        //return (fabs(angle_diff(pose.theta, target.theta)) < 0.07);
-        //only consider the orientation but do not care the position
-
+        return (fabs(angle_diff(target_heading, pose.theta)) < 0.05);
     }
 };
 
@@ -133,7 +170,7 @@ public:
     * 
     * \return   The motor command to send to the mbot_driver.
     */
-    mbot_motor_command_t updateCommand(void) 
+    mbot_motor_command_t updateCommand(void)
     {
         mbot_motor_command_t cmd {now(), 0.0, 0.0};
         
@@ -142,12 +179,25 @@ public:
             pose_xyt_t target = targets_.back();
             pose_xyt_t pose = currentPose();
 
-            ///////  TODO: Add different states when adding maneuver controls /////// 
-            if(state_ == TURN)
+            ///////  TODO: Add different states when adding maneuver controls ///////
+            if (state_ == Rotate){
+                if(rotate_controller.target_reached(pose, target))
+                {
+                    state_ = DRIVE;
+                }
+                else
+                {
+                    cmd = rotate_controller.get_command(pose, target);
+                }
+            }
+            else if(state_ == TURN)
             { 
                 if(turn_controller.target_reached(pose, target))
                 {
-		            state_ = DRIVE;
+		            if(!assignNextTarget())
+                    {
+                      std::cout<<"\\rTarget Reached!";
+                    }
                 } 
                 else
                 {
@@ -158,10 +208,12 @@ public:
             {
                 if(straight_controller.target_reached(pose, target))
                 {
-                    if(!assignNextTarget())
-                    {
-                        std::cout << "\rTarget Reached!";
-                    }
+                    state_ = TURN;
+
+                    //if(!assignNextTarget())
+                    //{
+                        //std::cout << "\rTarget Reached!";
+                    //}
                 }
                 else
                 { 
@@ -220,8 +272,10 @@ private:
     
     enum State
     {
+        Rotate,
         TURN,
-        DRIVE
+        DRIVE,
+
     };
     
     pose_xyt_t odomToGlobalFrame_;      // transform to convert odometry into the global/map coordinates for navigating in a map
@@ -237,6 +291,7 @@ private:
  
     TurnManeuverController turn_controller;
     StraightManeuverController straight_controller;
+    RotateManeuverController rotate_controller;
 
     int64_t now()
     {
@@ -246,7 +301,7 @@ private:
     bool assignNextTarget(void)
     {
         if(!targets_.empty()) { targets_.pop_back(); }
-        state_ = TURN;
+        state_ = Rotate;
         return !targets_.empty();
     }
     
