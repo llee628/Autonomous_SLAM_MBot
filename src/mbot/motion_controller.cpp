@@ -17,7 +17,7 @@
 #include <signal.h>
 #include "maneuver_controller.h"
 
-#define Vmax 0.25
+#define Vmax 0.75
 #define Wmax M_PI
 
 
@@ -42,30 +42,30 @@ public:
     StraightManeuverController() = default;   
     virtual mbot_motor_command_t get_command(const pose_xyt_t& pose, const pose_xyt_t& target) override
     {
-    /**
-    * Send the command to go straight.
-    */
-    const float Kv = 0.8;
-    const float Kw = 1;
-    float dx = target.x - pose.x;
-    float dy = target.y - pose.y;
-    float d = sqrt(pow(dx, 2) + pow(dy, 2));
-    float alpha = angle_diff(atan2(dy, dx), pose.theta);
-    float v = Kv*d;
-    float w = Kw*alpha;
+        /**
+        * Send the command to go straight.
+        */
+        const float Kv = 1.0;
+        const float Kw = 1.2;
+        float dx = target.x - pose.x;
+        float dy = target.y - pose.y;
+        float d = sqrt(pow(dx, 2) + pow(dy, 2));
+        float alpha = angle_diff(atan2(dy, dx), pose.theta);
+        float v = Kv*d;
+        float w = Kw*alpha;
 
-    if(v>=Vmax){
-        v = Vmax;
-    }
-    if(w<-Wmax){
-        w = -Wmax;
-    }
-    else if(w>Wmax){
-        w = Wmax;
-    }
-    else{}
-    return {0, v, w};
-    //return {0, 0.25, 0};
+        if(v>=Vmax){
+            v = Vmax;
+        }
+        
+        if(w<-Wmax){
+            w = -Wmax;
+        }
+        else if(w>Wmax){
+            w = Wmax;
+        }
+    
+        return {0, v, w};
     }
 
     virtual bool target_reached(const pose_xyt_t& pose, const pose_xyt_t& target)  override
@@ -80,21 +80,22 @@ public:
     TurnManeuverController() = default;   
     virtual mbot_motor_command_t get_command(const pose_xyt_t& pose, const pose_xyt_t& target) override
     {
-    /**
-    * Send the command to turn.
-    */
-    const float Kw = 1;
-    float alpha = angle_diff(target.theta, pose.theta);
-    float w = Kw * alpha;
-    if(w<-Wmax){
-        w = -Wmax;
-    }
-    else if(w>Wmax){
-        w = Wmax;
-    }
-    else{}
-    return {0, 0, w};
-    //return {0, 0, M_PI/4};
+        /**
+        * Send the command to turn.
+        */
+        const float Kw = 2.0;
+        float beta = angle_diff(target.theta, pose.theta);
+        float w = Kw * beta;
+        
+        if(w<-Wmax){
+            w = -Wmax;
+        }
+        else if(w>Wmax){
+            w = Wmax;
+        }
+
+        return {0, 0.0, w};
+        //return {0, 0, M_PI/4};
     }
 
     virtual bool target_reached(const pose_xyt_t& pose, const pose_xyt_t& target)  override
@@ -103,8 +104,10 @@ public:
         //float dy = target.y - pose.y;
         //float target_heading = atan2(dy, dx);
         //return (fabs(angle_diff(pose.theta, target_heading)) < 0.07);
+        
+        // only consider the orientation but do not care the position
         return (fabs(angle_diff(pose.theta, target.theta)) < 0.07);
-        //only consider the orientation but do not care the position
+        
 
     }
 };
@@ -118,20 +121,21 @@ public:
         /**
         * Send the command to turn.
         */
-        const float Kw = 1;
+        const float Kw = 2.0;
         float dx = target.x - pose.x;
         float dy = target.y - pose.y;
         float target_heading = atan2(dy, dx);
         float alpha = angle_diff(target_heading, pose.theta);
         float w = Kw * alpha;
+        
         if(w<-Wmax){
             w = -Wmax;
         }
         else if(w>Wmax){
             w = Wmax;
         }
-        else{}
-        return {0, 0, w};
+        
+        return {0, 0.0, w};
         //return {0, 0, M_PI/4};
     }
 
@@ -140,7 +144,7 @@ public:
         float dx = target.x - pose.x;
         float dy = target.y - pose.y;
         float target_heading = atan2(dy, dx);
-        return (fabs(angle_diff(target_heading, pose.theta)) < 0.05);
+        return (fabs(angle_diff(target_heading, pose.theta)) < 0.10);
     }
 };
 
@@ -174,20 +178,23 @@ public:
     {
         mbot_motor_command_t cmd {now(), 0.0, 0.0};
         
-        if(!targets_.empty() && !odomTrace_.empty()) 
-        {
+        if(!targets_.empty() && !odomTrace_.empty()){
             pose_xyt_t target = targets_.back();
             pose_xyt_t pose = currentPose();
 
             ///////  TODO: Add different states when adding maneuver controls ///////
             if (state_ == Rotate){
                 if(rotate_controller.target_reached(pose, target))
-                {
+                {   
+                    std::cout << "Enter DRIVE state.\n";
+                    cmd.trans_v = 0.0;
+                    cmd.angular_v = 0.0;
                     state_ = DRIVE;
                 }
                 else
                 {
                     cmd = rotate_controller.get_command(pose, target);
+                    cmd.utime = now();
                 }
             }
             else if(state_ == TURN)
@@ -202,6 +209,7 @@ public:
                 else
                 {
                     cmd = turn_controller.get_command(pose, target);
+                    cmd.utime = now();
                 }
             }
             else if(state_ == DRIVE) 
@@ -218,13 +226,14 @@ public:
                 else
                 { 
                     cmd = straight_controller.get_command(pose, target);
+                    cmd.utime = now();
                 }
 		    }
             else
             {
                 std::cerr << "ERROR: MotionController: Entered unknown state: " << state_ << '\n';
             }
-            cmd = {now(), cmd.trans_v, cmd.angular_v};
+            //cmd = {now(), cmd.trans_v, cmd.angular_v};
             //std::cout<<"State:"<<state_<<" "<<"Pose:"<<"("<<pose.x<<","<<pose.y<<","<<pose.theta<<")"<<" "<<"Tar:"<<"("<<target.x<<","<<target.y<<","<<target.theta<<")"<<"\n";
 		}
         return cmd; 
