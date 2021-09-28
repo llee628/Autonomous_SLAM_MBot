@@ -18,42 +18,42 @@ int main(int argc, char** argv)
     
     nextPose.x = 0.61f;
     nextPose.y = 0.0f;
-    nextPose.theta = 0.0f;
+    nextPose.theta = -M_PI_2;
     path.path[0] = nextPose;
 
     nextPose.x = 0.61f;
     nextPose.y = -0.61f;
-    nextPose.theta = -M_PI_2;
+    nextPose.theta = 0.0f;
     path.path[1] = nextPose;
     
     nextPose.x = 1.22f;
     nextPose.y = -0.61f;
-    nextPose.theta = 0.0f;
+    nextPose.theta = M_PI_2;
     path.path[2] = nextPose;
     
     nextPose.x = 1.22f;
     nextPose.y = 0.61f;
-    nextPose.theta = M_PI_2;
+    nextPose.theta = 0.0f;
     path.path[3] = nextPose;
 
     nextPose.x = 1.83f;
     nextPose.y = 0.61f;
-    nextPose.theta = 0.0f;
+    nextPose.theta = -M_PI_2;
     path.path[4] = nextPose;
 
     nextPose.x = 1.83f;
     nextPose.y = -0.61f;
-    nextPose.theta = -M_PI_2;
+    nextPose.theta = 0.0f;
     path.path[5] = nextPose;
 
     nextPose.x = 2.44f;
     nextPose.y = -0.61f;
-    nextPose.theta = 0.0f;
+    nextPose.theta = M_PI_2;
     path.path[6] = nextPose;
 
     nextPose.x = 2.44f;
     nextPose.y = 0.0f;
-    nextPose.theta = M_PI_2;
+    nextPose.theta = 0.0f;
     path.path[7] = nextPose;
 
     nextPose.x = 3.05f;
