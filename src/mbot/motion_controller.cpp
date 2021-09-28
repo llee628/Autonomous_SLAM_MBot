@@ -38,6 +38,7 @@ public:
     StraightManeuverController() = default;   
     virtual mbot_motor_command_t get_command(const pose_xyt_t& pose, const pose_xyt_t& target) override
     {
+
         return {0, 0.1, 0};
     }
 
@@ -45,6 +46,10 @@ public:
     {
         return ((fabs(pose.x - target.x) < 0.1) && (fabs(pose.y - target.y)  < 0.1));
     }
+
+private:
+    const float 
+
 };
 
 class TurnManeuverController : public ManeuverControllerBase
@@ -53,7 +58,33 @@ public:
     TurnManeuverController() = default;   
     virtual mbot_motor_command_t get_command(const pose_xyt_t& pose, const pose_xyt_t& target) override
     {
-        return {0, 0, 0.5};
+        float targetHeading = std::atan2(target.y-pose.y, target.x-pose.x);
+        float alpha = angle_diff(targetHeading, pose.theta);  // refer to the symbol in lec6 p11
+        float beta = angle_diff(target.theta, pose.theta);    // refer to the symbol in lec6 p11
+
+        std::cout<<"target heading: "<<targetHeading<<", pose theta: "<<pose.theta<<std::endl;
+        std::cout<<"Angle error: "<<alpha<<std::endl;
+
+
+        cmd.trans_v = 0;    // set tran velocity to 0
+        float turn_speed = 0.0;
+
+        if (alpha > 0){
+            std::cout<<"Turning left\n";
+            turn_speed = kTurnSpeed;
+        }
+        else{
+            std::cout<<"Turning right\n";
+            turn_speed = -kTurnSpeed;
+        }
+
+        // if (fabs(alpha) < 0.5){
+        //     float error_delta = alpha - lastError_;
+
+
+        // }
+
+        return {0, 0, turn_speed};
     }
 
     virtual bool target_reached(const pose_xyt_t& pose, const pose_xyt_t& target)  override
@@ -63,6 +94,9 @@ public:
         float target_heading = atan2(dy, dx);
         return (fabs(angle_diff(pose.theta, target_heading)) < 0.07);
     }
+private:
+    mbot_motor_command_t cmd;
+    const float kTurnSpeed = 1.0;
 };
 
 
@@ -93,6 +127,7 @@ public:
     */
     mbot_motor_command_t updateCommand(void) 
     {
+        
         mbot_motor_command_t cmd {now(), 0.0, 0.0};
         
         if(!targets_.empty() && !odomTrace_.empty()) 
@@ -105,6 +140,9 @@ public:
             { 
                 if(turn_controller.target_reached(pose, target))
                 {
+                    std::cout<<"Enter DRIVE state.\n";
+                    cmd.trans_v = 0;
+                    cmd.angular_v = 0;
 		            state_ = DRIVE;
                 } 
                 else
@@ -193,6 +231,15 @@ private:
  
     TurnManeuverController turn_controller;
     StraightManeuverController straight_controller;
+
+    // PID Gains
+    const float KpGain = 0.5;
+    const float KdGain = 0.1;
+    const float KIGain = 0.0005;
+
+    // Error terms for the current target
+    float lastError_;       // for D-term
+    float totalError_;      // for I-term
 
     int64_t now()
     {
