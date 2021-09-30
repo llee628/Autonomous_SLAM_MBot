@@ -54,6 +54,11 @@ public:
         float v = Kv*d;
         float w = Kw*alpha;
 
+        // go slower when alpha (error) become bigger
+        v *= std::cos(alpha);
+        // just to prevernt go backward
+        v = std::max(0.0f, v);
+
         if(v>=Vmax){
             v = Vmax;
         }
