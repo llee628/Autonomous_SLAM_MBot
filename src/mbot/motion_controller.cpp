@@ -17,7 +17,7 @@
 #include <signal.h>
 #include "maneuver_controller.h"
 
-#define Vmax 0.75
+#define Vmax 0.8
 #define Wmax M_PI
 
 
@@ -45,8 +45,8 @@ public:
         /**
         * Send the command to go straight.
         */
-        const float Kv = 1.0;
-        const float Kw = 1.2;
+        const float Kv = 1.5;
+        const float Kw = 1.6;
         float dx = target.x - pose.x;
         float dy = target.y - pose.y;
         float d = sqrt(pow(dx, 2) + pow(dy, 2));
@@ -55,9 +55,10 @@ public:
         float w = Kw*alpha;
 
         // go slower when alpha (error) become bigger
-        v *= std::cos(alpha);
-        // just to prevernt go backward
-        v = std::max(0.0f, v);
+        // for now it would contain the "go staight line" and "accurate way point" tradeoff
+        
+        // v *= std::cos(alpha);
+        // v = std::max(0.0f, v);   // just to prevernt go backward
 
         if(v>=Vmax){
             v = Vmax;
