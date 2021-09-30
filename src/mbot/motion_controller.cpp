@@ -46,7 +46,7 @@ public:
         * Send the command to go straight.
         */
         const float Kv = 1.0;
-        const float Kw = 1.2;
+        const float Kw = 0.8;
         float dx = target.x - pose.x;
         float dy = target.y - pose.y;
         float d = sqrt(pow(dx, 2) + pow(dy, 2));
