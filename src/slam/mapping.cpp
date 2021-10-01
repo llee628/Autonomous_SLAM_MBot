@@ -45,15 +45,20 @@ void Mapping::scoreEndpoint(const adjusted_ray_t& ray, OccupancyGrid& map){
     }
 }
 void Mapping::scoreRay(const adjusted_ray_t& ray, OccupancyGrid& map){
+    // TODO: implement the Breshenham’s line algorithm
 
 }
 void Mapping::decreaseCellOdds(int x, int y, OccupancyGrid& map){
-
+    if(map(x, y) - std::numeric_limits<CellOdds>::min() > kMissOdds_){
+        map(x, y)-= kMissOdds_;
+    }
+    else{
+        map(x, y) = std::numeric_limits<CellOdds>::min();
+    }
 }
 void Mapping::increaseCellOdds(int x, int y, OccupancyGrid& map){
     //make sure we would not overflow;
     //1.check overflow
-    //
     if(std::numeric_limits<CellOdds>::max() - map(x,y) > kHitOdds_){
         map(x, y)+= kHitOdds_;
     }
