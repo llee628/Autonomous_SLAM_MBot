@@ -18,6 +18,7 @@
 #include "maneuver_controller.h"
 
 #define Vmax 0.25
+#define Vmin 0.15  // this is the lowest my motors can go
 #define Wmax M_PI
 
 
@@ -42,9 +43,7 @@ public:
     StraightManeuverController() = default;   
     virtual mbot_motor_command_t get_command(const pose_xyt_t& pose, const pose_xyt_t& target) override
     {
-    /**
-    * Send the command to go straight.
-    */
+    //Send the command to go straight
     const float Kv = 0.8;
     const float Kw = 1;
     float dx = target.x - pose.x;
@@ -54,18 +53,18 @@ public:
     float v = Kv*d;
     float w = Kw*alpha;
 
-    if(v>=Vmax){
+    if(v > Vmax){
         v = Vmax;
+    }else if(v < Vmin){
+        v = Vmin;
     }
-    if(w<-Wmax){
+
+    if(w < -Wmax){
         w = -Wmax;
-    }
-    else if(w>Wmax){
+    }else if(w > Wmax){
         w = Wmax;
     }
-    else{}
     return {0, v, w};
-    //return {0, 0.25, 0};
     }
 
     virtual bool target_reached(const pose_xyt_t& pose, const pose_xyt_t& target)  override
@@ -77,32 +76,24 @@ public:
 class TurnManeuverController : public ManeuverControllerBase
 {
 public:
-    TurnManeuverController() = default;   
+    TurnManeuverController() = default;
     virtual mbot_motor_command_t get_command(const pose_xyt_t& pose, const pose_xyt_t& target) override
     {
-    /**
-    * Send the command to turn.
-    */
+    //Send the command to turn
     const float Kw = 1;
     float alpha = angle_diff(target.theta, pose.theta);
     float w = Kw * alpha;
+
     if(w<-Wmax){
         w = -Wmax;
-    }
-    else if(w>Wmax){
+    }else if(w>Wmax){
         w = Wmax;
     }
-    else{}
     return {0, 0, w};
-    //return {0, 0, M_PI/4};
     }
 
     virtual bool target_reached(const pose_xyt_t& pose, const pose_xyt_t& target)  override
     {
-        //float dx = target.x - pose.x;
-        //float dy = target.y - pose.y;
-        //float target_heading = atan2(dy, dx);
-        //return (fabs(angle_diff(pose.theta, target_heading)) < 0.07);
         return (fabs(angle_diff(pose.theta, target.theta)) < 0.07);
         //only consider the orientation but do not care the position
 
@@ -115,24 +106,20 @@ public:
     RotateManeuverController() = default;
     virtual mbot_motor_command_t get_command(const pose_xyt_t& pose, const pose_xyt_t& target) override
     {
-        /**
-        * Send the command to turn.
-        */
+        //Send the command to rotate
         const float Kw = 1;
         float dx = target.x - pose.x;
         float dy = target.y - pose.y;
         float target_heading = atan2(dy, dx);
         float alpha = angle_diff(target_heading, pose.theta);
         float w = Kw * alpha;
-        if(w<-Wmax){
+
+        if(w < -Wmax){
             w = -Wmax;
-        }
-        else if(w>Wmax){
+        }else if(w > Wmax){
             w = Wmax;
         }
-        else{}
         return {0, 0, w};
-        //return {0, 0, M_PI/4};
     }
 
     virtual bool target_reached(const pose_xyt_t& pose, const pose_xyt_t& target)  override
