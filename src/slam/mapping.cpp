@@ -23,8 +23,9 @@ void Mapping::updateMap(const lidar_t& scan, const pose_xyt_t& pose, OccupancyGr
     MovingLaserScan movingScan(scan, previousPose_, pose); //returns a set of rays, each w/ own origin
     
     for(auto& ray : movingScan){
+        //map(10,10) += 5;
         scoreEndpoint(ray, map);
-        scoreRay(ray, map); 
+        //scoreRay(ray, map); 
     }
 
     initialized_ = true;
@@ -51,7 +52,11 @@ void Mapping::scoreRay(const adjusted_ray_t& ray, OccupancyGrid& map){
 }
 
 void Mapping::decreaseCellOdds(int x, int y, OccupancyGrid& map){
-
+    if((std::numeric_limits<CellOdds>::min() - map(x,y)) < -kHitOdds_){ //if we are not going to overflow datatype by increasing odds,
+        map(x,y) -= kHitOdds_;
+    } else {
+        map(x,y) = std::numeric_limits<CellOdds>::min();
+    }
 }
 
 void Mapping::increaseCellOdds(int x, int y, OccupancyGrid& map){
