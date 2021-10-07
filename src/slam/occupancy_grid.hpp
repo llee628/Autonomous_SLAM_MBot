@@ -8,6 +8,7 @@
 #include <vector>
 
 typedef int8_t CellOdds;   ///< Type used to represent the data in a cell
+                            // the integer in the range [-127,127] described in 2.1
 
 /**
 * OccupancyGrid represents a simple two-dimensional occupancy grid, which is a discretized representation of the
