@@ -88,23 +88,47 @@ std::vector<particle_t> ParticleFilter::resamplePosteriorDistribution(void)
 {
     //////////// TODO: Implement your algorithm for resampling from the posterior distribution ///////////////////
     ///////////  TODO: According to the live code, this is a wrong implementation
-    //std::vector<particle_t> prior;
-    //return prior;
-    std::vector<particle_t> prior = posterior_;
-    double sampleWeight = 1.0 / kNumParticles_;
+    std::vector<particle_t> prior;
     std::random_device rd;
     std::mt19937 generator(rd());
-    std::normal_distribution<> dist(0.0, 0.01);
-
-    for(auto& p:prior){
-        p.pose.x = posteriorPose_.x + dist(generator);
-        p.pose.y = posteriorPose_.y + dist(generator);
-        p.pose.theta = posteriorPose_.theta + dist(generator);
-        p.pose.utime = posteriorPose_.utime;
-        p.parent_pose = posteriorPose_;
-        p.weight = sampleWeight;
+    std::uniform_real_distribution<double> dist(0.0, double(1.0/kNumParticles_));
+    double r = dist(generator);
+    double c = posterior_.at(0).weight;
+    double U;
+    int i = 0;
+    for(int m=0; m<=kNumParticles_; m++){
+        U = r + (m-1) * double(1.0/kNumParticles_);
+        while(c<U){
+            i = i + 1;
+            c = c + posterior_.at(i).weight;
+        }
+        //add p to Prior
+        //prior.push_back(posterior_.at(i));
+        particle_t p;
+        p.pose.x = posterior_.at(i).pose.x;
+        p.pose.y = posterior_.at(i).pose.y;
+        p.pose.theta = posterior_.at(i).pose.theta;
+        p.pose.utime = posterior_.at(i).pose.utime;
+        p.parent_pose = posterior_.at(i).parent_pose;
+        p.weight = posterior_.at(i).weight;
+        prior.push_back(p);
     }
     return prior;
+//    std::vector<particle_t> prior = posterior_;
+//    double sampleWeight = 1.0 / kNumParticles_;
+//    std::random_device rd;
+//    std::mt19937 generator(rd());
+//    std::normal_distribution<> dist(0.0, 0.01);
+//
+//    for(auto& p:prior){
+//        p.pose.x = posteriorPose_.x + dist(generator);
+//        p.pose.y = posteriorPose_.y + dist(generator);
+//        p.pose.theta = posteriorPose_.theta + dist(generator);
+//        p.pose.utime = posteriorPose_.utime;
+//        p.parent_pose = posteriorPose_;
+//        p.weight = sampleWeight;
+//    }
+//    return prior;
 }
 
 
