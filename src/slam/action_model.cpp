@@ -7,7 +7,7 @@
 
 
 ActionModel::ActionModel(void)
-: k1_(0.01f)
+: k1_(0.8f)
 , k2_(0.01f)
 , initialized_(false)
 {
