@@ -284,7 +284,7 @@ void OccupancyGridSLAM::updateMap(void)
     // Send every 5th map -- about 1Hz update rate for map output -- can change if want more or less during operation
     if(mapUpdateCount_ % 5 == 0)
     {
-        if(haveMap_){
+        if(haveMap_) {
             auto mapMessage = map_.toLCM();
             lcm_.publish(SLAM_MAP_CHANNEL, &mapMessage);
             //map_.saveToFile("current.map");

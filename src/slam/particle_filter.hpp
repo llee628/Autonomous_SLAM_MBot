@@ -23,7 +23,8 @@ class OccupancyGrid;
 *   2) Sample an action from the ActionModel and apply it to each of these particles.
 *   3) Compute a weight for each particle using the SensorModel.
 *   4) Normalize the weights.
-*   5) Use the max-weight or mean-weight pose as the estimated pose for this update.
+*   5) Use the max-weight or mean-weight pose as the estimated pose fo
+ *   r this update.
 */
 class ParticleFilter
 {

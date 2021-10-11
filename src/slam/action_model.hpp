@@ -54,7 +54,29 @@ public:
     particle_t applyAction(const particle_t& sample);
     
 private:
-    
+    const float k1_;
+    const float k2_;
+
+    pose_xyt_t previousOdometry_;
+    //keep track of the RTR, and use to compute the variance;
+    double rot1_;
+    double trans_;
+    double rot2_;
+
+    bool moved_;
+    bool initialized_;
+
+    int64_t utime_;
+
+    //Calculate the standard deviation
+    double rot1Std_;
+    double transStd_;
+    double rot2Std_;
+
+    //random number generator;
+    std::mt19937 numberGenerator_;
+
+
     ////////// TODO: Add private member variables needed for you implementation ///////////////////
 };
 
