@@ -96,7 +96,7 @@ std::vector<particle_t> ParticleFilter::resamplePosteriorDistribution(void)
     double c = posterior_.at(0).weight;
     double U;
     int i = 0;
-    for(int m=0; m<=kNumParticles_; m++){
+    for(int m=1; m<=kNumParticles_; m++){
         U = r + (m-1) * double(1.0/kNumParticles_);
         while(c<U){
             i = i + 1;
@@ -183,6 +183,8 @@ pose_xyt_t ParticleFilter::estimatePosteriorPose(const std::vector<particle_t>& 
     pose.x = xMean;
     pose.y = yMean;
     pose.theta = std::atan2(sinThetaMean, cosThetaMean);
+
+    //std::vector<particle_t> posterior_sorted
 
     return pose;
 }

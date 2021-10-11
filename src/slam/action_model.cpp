@@ -7,7 +7,7 @@
 
 
 ActionModel::ActionModel(void)
-: k1_(0.8f)
+: k1_(0.01f)
 , k2_(0.01f)
 , initialized_(false)
 {
@@ -36,12 +36,12 @@ bool ActionModel::updateAction(const pose_xyt_t& odometry)
 
     //a small trick that turns a large angle + go forward
     //into turns a small angle + go backward
-    float direction = 1.0;
+    /*float direction = 1.0;
     if(std::abs(rot1_)>M_PI/2.0){
         rot1_ = angle_diff(rot1_, M_PI);
         direction = -1.0;
     }
-    trans_ = direction * trans_;
+    trans_ = direction * trans_;*/
     moved_ = (deltaX != 0.0) || (deltaY != 0.0) || (deltaTheta != 0.0);
 
     if(moved_){
