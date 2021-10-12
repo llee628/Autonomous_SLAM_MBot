@@ -95,22 +95,53 @@ std::vector<particle_t> ParticleFilter::resamplePosteriorDistribution(void)
     // return prior;
 
     // maybe those implementations are wrong
+    //////////////////////////    live code version //////////////////////////////////////
+    // std::vector<particle_t> prior = posterior_;
+    // double sampleWeight = 1.0/kNumParticles_;
+    // std::random_device rd;
+    // std::mt19937 generator(rd());
+    // std::normal_distribution<> dist(0.0, 0.04);
 
-    std::vector<particle_t> prior = posterior_;
-    double sampleWeight = 1.0/kNumParticles_;
+    // for (auto& p: prior)
+    // {
+    //     p.pose.x = posteriorPose_.x + dist(generator);
+    //     p.pose.y = posteriorPose_.y + dist(generator);
+    //     p.pose.theta = posteriorPose_.theta + dist(generator);
+    //     p.pose.utime = posteriorPose_.utime;
+    //     p.parent_pose = posteriorPose_;
+    //     p.weight = sampleWeight;
+    // }
+    //////////////////////        live code version end     /////////////////////////////////
+
+    // Low Variance Resampling
+    std::vector<particle_t> prior;
+    double M_inv = 1.0/kNumParticles_;
     std::random_device rd;
     std::mt19937 generator(rd());
-    std::normal_distribution<> dist(0.0, 0.04);
 
-    for (auto& p: prior)
-    {
-        p.pose.x = posteriorPose_.x + dist(generator);
-        p.pose.y = posteriorPose_.y + dist(generator);
-        p.pose.theta = posteriorPose_.theta + dist(generator);
-        p.pose.utime = posteriorPose_.utime;
-        p.parent_pose = posteriorPose_;
-        p.weight = sampleWeight;
+    std::uniform_real_distribution<double> dist(0.0, M_inv);
+
+    double r = dist(generator);
+    //double r = (((double) rand()) / (double)RAND_MAX) * M_inv;
+
+    double c = posterior_[0].weight;
+    double U;
+    int i = 0;
+
+    for (int m = 1; m <= kNumParticles_; m++){
+        U = r + (m-1) * M_inv;
+        while (c < U){
+            i += 1;
+            c += posterior_[i].weight;
+        }
+
+        // add p to prior
+        particle_t p;
+        p = posterior_[i];
+        prior.push_back(p);
     }
+    //////////////////////////// end of low variance resampling algorithm /////////////////////////
+
 
     return prior;
 
