@@ -7,10 +7,10 @@
 
 
 ActionModel::ActionModel(void)
-: k1_(0.0001f)
+: k1_(0.00000001f)
 , k2_(0.0001f)
 , k3_(0.0001f)
-, k4_(0.0001f)
+, k4_(0.00000001f)
 , initialized_(false)
 {
     //////////////// TODO: Handle any initialization for your ActionModel /////////////////////////
