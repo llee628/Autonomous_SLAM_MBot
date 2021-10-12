@@ -56,6 +56,8 @@ public:
 private:
     const float k1_;
     const float k2_;
+    const float k3_;
+    const float k4_;
 
     pose_xyt_t previousOdometry_;
     //keep track of the RTR, and use to compute the variance;
