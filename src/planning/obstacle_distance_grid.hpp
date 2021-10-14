@@ -6,6 +6,7 @@
 #include <queue>
 
 typedef Point<int> cell_t;
+
 struct DistanceNode{
     cell_t cell;
     float distance;
@@ -80,8 +81,8 @@ public:
     * \return   True if the cell is in the grid boundary as specified above.
     */
     bool isCellInGrid(int x, int y) const;
-    void enqueue_obstacle_cells(ObstacleDistanceGrid& grid, std::priority_queue<DistanceNode> searchQueue);
-    void expand_node(const DistanceNode& node, ObstacleDistanceGrid& grid, std::priority_queue<DistanceNode> searchQueue);
+    void enqueue_obstacle_cells(ObstacleDistanceGrid& grid, std::priority_queue<DistanceNode>& searchQueue);
+    void expand_node(const DistanceNode& node, ObstacleDistanceGrid& grid, std::priority_queue<DistanceNode>& searchQueue);
     /**
     * operator() provides unchecked access to the cell located at (x,y). If the cell isn't contained in the grid,
     * expect fireworks or a slow, ponderous death.
