@@ -42,6 +42,7 @@ pose_xyt_t ParticleFilter::updateFilter(const pose_xyt_t&      odometry,
         auto proposal = computeProposalDistribution(prior);
         posterior_ = computeNormalizedPosterior(proposal, laser, map);
         posteriorPose_ = estimatePosteriorPose(posterior_);
+        //posteriorPose_ = top10estimatePosteriorPose(posterior_);
     }
     
     posteriorPose_.utime = odometry.utime;
@@ -96,7 +97,7 @@ std::vector<particle_t> ParticleFilter::resamplePosteriorDistribution(void)
     double c = posterior_.at(0).weight;
     double U;
     int i = 0;
-    for(int m=0; m<=kNumParticles_; m++){
+    for(int m=1; m<=kNumParticles_; m++){
         U = r + (m-1) * double(1.0/kNumParticles_);
         while(c<U){
             i = i + 1;
@@ -175,6 +176,44 @@ pose_xyt_t ParticleFilter::estimatePosteriorPose(const std::vector<particle_t>& 
     double cosThetaMean = 0.0;
     double sinThetaMean = 0.0;
     for(auto & p : posterior){
+        xMean += p.weight * p.pose.x;
+        yMean += p.weight * p.pose.y;
+        cosThetaMean += p.weight * std::cos(p.pose.theta);
+        sinThetaMean += p.weight * std::sin(p.pose.theta);
+    }
+    pose.x = xMean;
+    pose.y = yMean;
+    pose.theta = std::atan2(sinThetaMean, cosThetaMean);
+
+    //std::vector<particle_t> posterior_sorted
+
+    return pose;
+}
+///this is top 10% percent estimation
+bool weight_function(particle_t& i, particle_t& j){
+    return (i.weight>j.weight);
+};
+pose_xyt_t ParticleFilter::top10estimatePosteriorPose(const std::vector<particle_t>& posterior)
+{
+    //////// TODO: Implement your method for computing the final pose estimate based on the posterior distribution
+    pose_xyt_t pose;
+    std::vector<particle_t> posterior_sorted = posterior;
+    std::sort(posterior_sorted.begin(), posterior_sorted.end(), weight_function);
+
+    std::vector<particle_t>::const_iterator first = posterior_sorted.begin();
+    std::vector<particle_t>::const_iterator second = posterior_sorted.begin() + int(kNumParticles_/10);
+    std::vector<particle_t> p_resample(first, second);
+    double WeightSum = 0.0;
+    for(auto& p:p_resample){
+        WeightSum+=p.weight;
+    }
+
+    double xMean = 0.0;
+    double yMean = 0.0;
+    double cosThetaMean = 0.0;
+    double sinThetaMean = 0.0;
+    for(auto & p :p_resample){
+        p.weight /= WeightSum;
         xMean += p.weight * p.pose.x;
         yMean += p.weight * p.pose.y;
         cosThetaMean += p.weight * std::cos(p.pose.theta);

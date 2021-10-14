@@ -10,7 +10,7 @@
 
 class lidar_t;
 class OccupancyGrid;
-
+bool weight_function(particle_t& i, particle_t& j);
 /**
 * ParticleFilter implements a standard SIR-based particle filter. The set of particles is initialized at some pose. Then
 * on subsequent calls to updateFilter, a new pose estimate is computed using the latest odometry and laser measurements
@@ -93,6 +93,7 @@ private:
                                                        const lidar_t& laser,
                                                        const OccupancyGrid&   map);
     pose_xyt_t estimatePosteriorPose(const std::vector<particle_t>& posterior);
+    pose_xyt_t top10estimatePosteriorPose(const std::vector<particle_t>& posterior);
 };
 
 #endif // SLAM_PARTICLE_FILTER_HPP

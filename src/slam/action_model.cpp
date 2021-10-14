@@ -7,8 +7,14 @@
 
 
 ActionModel::ActionModel(void)
-: k1_(0.8f)
+// : k1_(0.00000001f)
+// , k2_(0.0001f)
+// , k3_(0.001f)
+// , k4_(0.00000001f)
+: k1_(0.00000001f)
 , k2_(0.01f)
+, k3_(0.01f)
+, k4_(0.0000001f)
 , initialized_(false)
 {
     //////////////// TODO: Handle any initialization for your ActionModel /////////////////////////
@@ -36,18 +42,21 @@ bool ActionModel::updateAction(const pose_xyt_t& odometry)
 
     //a small trick that turns a large angle + go forward
     //into turns a small angle + go backward
-    float direction = 1.0;
+    /*float direction = 1.0;
     if(std::abs(rot1_)>M_PI/2.0){
         rot1_ = angle_diff(rot1_, M_PI);
         direction = -1.0;
     }
-    trans_ = direction * trans_;
+    trans_ = direction * trans_;*/
     moved_ = (deltaX != 0.0) || (deltaY != 0.0) || (deltaTheta != 0.0);
 
     if(moved_){
-        rot1Std_ = std::sqrt(k1_ * std::abs(rot1_));
+        /*rot1Std_ = std::sqrt(k1_ * std::abs(rot1_));
         transStd_ = std::sqrt(k2_ * std::abs(trans_));
-        rot2Std_ = std::sqrt(k1_ * std::abs(rot2_));
+        rot2Std_ = std::sqrt(k1_ * std::abs(rot2_));*/
+        rot1Std_ = std::sqrt(k1_ * rot1_ * rot1_ + k2_ * trans_ * trans_);
+        transStd_ = std::sqrt(k3_ * trans_ * trans_ + k4_ * rot1_ * rot1_ + k4_ * rot2_ * rot2_);
+        rot2Std_ = std::sqrt(k1_ * rot2_ * rot2_ + k2_ * trans_ * trans_);
     }
 
     //update the odometry;
