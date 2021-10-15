@@ -3,6 +3,91 @@
 
 #include <lcmtypes/robot_path_t.hpp>
 #include <lcmtypes/pose_xyt_t.hpp>
+#include <queue>
+typedef  Point<int> cell_t;
+struct Node
+{
+    Node(int a, int b):cell(a,b),g_cost(0.0),h_cost(0.0),parent(NULL){}
+    cell_t cell;
+    Node* parent;
+    double h_cost;
+    double g_cost;
+    double f_cost(void) const{return g_cost + h_cost;}
+
+    //overload to compare
+    bool operator==(const Node& rhs) const{
+        return (cell == rhs.cell);
+    }
+
+};
+
+//compare the f-cost first and then compare the h-cost
+
+struct CompareNode
+{
+    bool()(Node* n1, Node* n2)
+    {
+        if(n1->f_cost() == n2->f_cost()){
+            return n1->h_cost > n2->h_cost;
+        }
+        else
+            return(n1->f_cost() > n2->f_cost());
+    }
+};
+
+struct PriorityQueue
+{
+    std::priority_queue<Node*, std::vector<Node*>, CompareNode> Q;
+    //look and pick elements in the queue
+    std::vector<Node*> elements;
+    bool empty()
+    {
+        return Q.empty();
+    }
+
+    bool is_member(Node* n)
+    {
+        for(auto node: elements){
+            if(n == node){
+                return true;
+            }
+        }
+        return false;
+    }
+
+    Node* get_member(Node* n){
+        for(auto node: elements){
+            if(n == node){
+                return node;
+            }
+        }
+        return NULL;
+    }
+
+    void push(Node* n){
+        elements.push_back(n);
+        Q.push(n);
+    }
+
+    Node* pop()
+    {
+        int idx = -1;
+        Node* n = Q.top();
+        Q.pop();
+        for(int i = 0; i<elements.size();i++){
+            if(elements[i]==n){
+                idx = i;
+                break;
+            }
+        }
+        elements.erase(elements.begin() + idx);
+        return n;
+    }
+
+
+};
+
+
 
 class ObstacleDistanceGrid;
 
@@ -22,6 +107,13 @@ struct SearchParams
                                     ///<   pow(maxDistanceWithCost - cellDistance, distanceCostExponent)
                                     ///< for cellDistance > minDistanceToObstacle && cellDistance < maxDistanceWithCost
 };
+
+double h_cost(Node* from, Node* goal);
+double g_cost(Node* from, Node* to, const ObstacleDistanceGrid& distances, const SearchParams& params);
+std::vector<Node*> expand_node(Node* node, ObstacleDistanceGrid& distances, const SearchParams& params);
+std::vector<Node*> extract_node_path(Node* node);
+std::vector<pose_xyt_t> extract_pose_path(std::vector<Node*> nodePath, const ObstacleDistanceGrid& distances);
+
 
 
 /**
