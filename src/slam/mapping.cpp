@@ -10,6 +10,7 @@ Mapping::Mapping(float maxLaserDistance, int8_t hitOdds, int8_t missOdds)
 , kHitOdds_(hitOdds)
 , kMissOdds_(missOdds)
 {
+    initialized_ =  false;
 }
 
 
@@ -20,10 +21,15 @@ void Mapping::updateMap(const lidar_t& scan, const pose_xyt_t& pose, OccupancyGr
         previousPose_ = pose;
     }
 
-    MovingLaserScan movingScan(scan, previousPose_, pose);
+    MovingLaserScan movingScan(scan, previousPose_, pose, 1);
 
+    // scoring boundaries
     for (auto& ray : movingScan){
         scoreEndpoint(ray, map);
+    }
+
+    // scoring empty region
+    for (auto& ray : movingScan){
         scoreRay(ray, map);
     }
 
@@ -34,7 +40,7 @@ void Mapping::updateMap(const lidar_t& scan, const pose_xyt_t& pose, OccupancyGr
 
 void Mapping::scoreEndpoint(const adjusted_ray_t& ray, OccupancyGrid& map){
     if (ray.range < kMaxLaserDistance_){
-        Point<float> rayStart = global_position_to_grid_cell(ray.origin, map);
+        Point<double> rayStart = global_position_to_grid_position(ray.origin, map);
         Point<int> rayCell;
 
         rayCell.x = static_cast<int>((ray.range * std::cos(ray.theta) * map.cellsPerMeter()) + rayStart.x);
@@ -48,7 +54,7 @@ void Mapping::scoreEndpoint(const adjusted_ray_t& ray, OccupancyGrid& map){
 }
 void Mapping::scoreRay(const adjusted_ray_t& ray, OccupancyGrid& map){
     if (ray.range < kMaxLaserDistance_){
-        Point<float> rayStart = global_position_to_grid_cell(ray.origin, map);
+        Point<double> rayStart = global_position_to_grid_position(ray.origin, map);
         Point<int> rayCell;
 
         rayCell.x = static_cast<int>((ray.range * std::cos(ray.theta) * map.cellsPerMeter()) + rayStart.x);
