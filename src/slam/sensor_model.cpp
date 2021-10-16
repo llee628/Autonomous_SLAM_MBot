@@ -19,12 +19,40 @@ double SensorModel::likelihood(const particle_t& sample, const lidar_t& scan, co
     MovingLaserScan movingScan(scan, sample.parent_pose, sample.pose);
     double scanScore = 0.0;
 
+
+    ////////////////////////////////////// Simple one //////////////////////////
+    // for (auto& ray : movingScan){
+    //     Point<double> endpoint(ray.origin.x + ray.range * std::cos(ray.theta),
+    //                            ray.origin.y + ray.range * std::sin(ray.theta));
+    //     auto rayEnd = global_position_to_grid_position(endpoint, map);
+    //     if (map.logOdds(rayEnd.x, rayEnd.y) > 0.0){
+    //         scanScore += 1.0;
+    //     }
+
+    // }
+
+    //////////////// More sophisticated one: /////////////////////////
+    /*
+        Here should check whether the range of the lidar_scan is in between the max and the min
+    */
+
     for (auto& ray : movingScan){
         Point<double> endpoint(ray.origin.x + ray.range * std::cos(ray.theta),
                                ray.origin.y + ray.range * std::sin(ray.theta));
+        
+        Point<double> middlepoint(ray.origin.x + (ray.range-0.05f) * std::cos(ray.theta),
+                                  ray.origin.y + (ray.range-0.05f) * std::sin(ray.theta));
+    
         auto rayEnd = global_position_to_grid_position(endpoint, map);
+        auto rayMiddle = global_position_to_grid_position(middlepoint, map);
+
         if (map.logOdds(rayEnd.x, rayEnd.y) > 0.0){
-            scanScore += 1.0;
+            if (map.logOdds(rayMiddle.x, rayMiddle.y) > 0.0){
+                scanScore += (map.logOdds(rayMiddle.x, rayMiddle.y) + map.logOdds(rayEnd.x, rayEnd.y))/2;
+            }
+            else{
+                scanScore += map.logOdds(rayEnd.x, rayEnd.y);
+            }
         }
 
     }
