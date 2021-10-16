@@ -5,10 +5,16 @@
 #include <cmath>
 #include <iostream>
 
+#define K1      0.01f
+#define K2      0.01f
+#define K3      0.0001f
+#define K4      0.00000001f
 
 ActionModel::ActionModel(void)
-: k1_(0.01f)
-, k2_(0.01f)
+: k1_(K1)
+, k2_(K2)
+, k3_(K3)
+, k4_(K4)
 , initialized_(false)
 {
     //////////////// TODO: Handle any initialization for your ActionModel /////////////////////////
@@ -44,9 +50,15 @@ bool ActionModel::updateAction(const pose_xyt_t& odometry)
     moved_ = (std::abs(deltaX - 0.0) > 1E-6) || (std::abs(deltaY - 0.0) > 1E-6) || (std::abs(deltaTheta - 0.0) > 1E-6);
 
     if (moved_){
+        // Simple action mode
         rot1Std_ = std::sqrt(k1_ * std::abs(rot1_));
         transStd_ = std::sqrt(k2_ * std::abs(trans_));
         rot2Std_ = std::sqrt(k1_ * std::abs(rot2_));
+
+        // more complicated action mode
+        // rot1Std_ = std::sqrt(k1_ * rot1_ * rot1_ + k2_ * trans_ * trans_);
+        // transStd_ = std::sqrt(k3_ * trans_ * trans_ + k4_ * rot1_ * rot1_ + k4_ * rot2_ * rot2_);
+        // rot2Std_ = std::sqrt(k1_ * rot2_ * rot2_ + k2_ * trans_ * trans_);
     }
 
     trans_ *= direction;
