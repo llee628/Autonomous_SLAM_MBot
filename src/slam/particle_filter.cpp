@@ -175,6 +175,7 @@ std::vector<particle_t> ParticleFilter::computeNormalizedPosterior(const std::ve
         posterior.push_back(weighted);
     }
 
+    // normalize the weight
     for (auto& p : posterior){
         p.weight /= sumWeights;
     }
