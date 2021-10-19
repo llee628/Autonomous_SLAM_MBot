@@ -130,7 +130,7 @@ std::vector<particle_t> ParticleFilter::resamplePosteriorDistribution(void)
 
     for (int m = 1; m <= kNumParticles_; m++){
         U = r + (m-1) * M_inv;
-        while (c < U){
+        while (c < U && i < posterior_.size()){
             i += 1;
             c += posterior_[i].weight;
         }
@@ -203,6 +203,12 @@ pose_xyt_t ParticleFilter::estimatePosteriorPose(const std::vector<particle_t>& 
 
     pose.x = xMean;
     pose.y = yMean;
+
+    /*
+        Arithmetic mean is not appropriate for mean of angles
+        solution: Find mean in Cartesian coordinates and convert back with
+        atan2
+    */
     pose.theta = std::atan2(sinThetaMean, cosThetaMean);
 
     return pose;

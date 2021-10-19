@@ -102,7 +102,11 @@ private:
 
     bool isReadyToUpdate      (void);
     void runSLAMIteration     (void);
+
+    // Copy the data from LCM to the the data being used for
+    // current SLAM iteration
     void copyDataForSLAMUpdate(void);
+    
     void initializePosesIfNeeded(void);
     void updateLocalization   (void);
     void updateMap            (void);

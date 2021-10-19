@@ -27,7 +27,7 @@ double SensorModel::likelihood(const particle_t& sample, const lidar_t& scan, co
     */
 
     for (auto& ray : movingScan){
-        float ref_distance = 0.05f;
+        const float ref_distance = 0.05f;
 
         Point<double> endpoint(ray.origin.x + ray.range * std::cos(ray.theta),
                                ray.origin.y + ray.range * std::sin(ray.theta));
