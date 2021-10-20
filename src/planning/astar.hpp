@@ -3,7 +3,13 @@
 
 #include <lcmtypes/robot_path_t.hpp>
 #include <lcmtypes/pose_xyt_t.hpp>
+#include <planning/obstacle_distance_grid.hpp>
+
+#include <common/grid_utils.hpp>
+#include <algorithm>
+#include <vector>
 #include <queue>
+
 typedef  Point<int> cell_t;
 struct Node
 {
@@ -25,7 +31,7 @@ struct Node
 
 struct CompareNode
 {
-    bool()(Node* n1, Node* n2)
+    bool operator()(Node* n1, Node* n2)
     {
         if(n1->f_cost() == n2->f_cost()){
             return n1->h_cost > n2->h_cost;
@@ -110,10 +116,11 @@ struct SearchParams
 
 double h_cost(Node* from, Node* goal);
 double g_cost(Node* from, Node* to, const ObstacleDistanceGrid& distances, const SearchParams& params);
-std::vector<Node*> expand_node(Node* node, ObstacleDistanceGrid& distances, const SearchParams& params);
+std::vector<Node*> expand_node(Node* node, const ObstacleDistanceGrid& distances, const SearchParams& params);
 std::vector<Node*> extract_node_path(Node* node);
-std::vector<pose_xyt_t> extract_pose_path(std::vector<Node*> nodePath, const ObstacleDistanceGrid& distances);
-
+std::vector<pose_xyt_t> extract_pose_path(std::vector<Node*>& nodePath, const ObstacleDistanceGrid& distances);
+bool is_member_vector(Node* node, std::vector<Node*>& elements);
+bool is_reached(Node* node, Node* goal);
 
 
 /**
