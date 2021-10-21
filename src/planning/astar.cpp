@@ -19,9 +19,11 @@ bool is_reached(Node* node, Node* goal){
     return *node == *goal;
 }
 
+//change n==node to *n==*node
+//b.c wo reload the compare method to Node
 bool is_member_vector(Node* node, std::vector<Node*>& elements){
     for(auto n: elements){
-        if(n == node){
+        if(*n == *node){
             return true;
         }
     }
@@ -53,13 +55,16 @@ std::vector<Node*> expand_node(Node* node, const ObstacleDistanceGrid& distances
     for(int i=0;i<8;i++){
         int newX = node->cell.x+xDeltas[i];
         int newY = node->cell.y+yDeltas[i];
+        //node outside the map
         if(not distances.isCellInGrid(newX, newY)) { continue; }
-        //TODO:add some heuristic, for example obstacle
-
-        //update new kid
-        Node* adjacentNode = new Node(newX, newY);
-        adjacentNode->parent = node;
-        children.push_back(adjacentNode);
+        //obstacle node
+        else if(distances(newX, newY)==0.0f){ continue; }
+        else {
+            //update new kid
+            Node *adjacentNode = new Node(newX, newY);
+            adjacentNode->parent = node;
+            children.push_back(adjacentNode);
+        }
     }
     return children;
 }
@@ -116,21 +121,23 @@ robot_path_t search_for_path(pose_xyt_t start,
     //set up a vector to store the node path of A* planning
     std::vector<Node*> nodepath_;
 
-    int width = distances.widthInCells();
+    //print the distances map;
+    /*int width = distances.widthInCells();
     int height = distances.heightInCells();
     for(int y=0;y<height;y++){
         for(int x=0;x<width;x++){
             std::cout<<distances(x,y)<<" ";
         }
         std::cout<<std::endl;
-    }
-    //check start point!
+    }*/
+
     //std::cout<<distances(startCell.x, startCell.y)<<std::endl;
 
-
+    //check start point!
     if(distances(startCell.x, startCell.y)==0.0f){
         std::cout<<"fatal error!"<<std::endl;
     }
+    //check if reach the goal
     else if(is_reached(startNode, goalNode))
     {
         nodepath_ = extract_node_path(startNode);
@@ -145,6 +152,7 @@ robot_path_t search_for_path(pose_xyt_t start,
         bool find_path = false;
         while (not openList.empty()) {
             Node *n = openList.pop();
+            //std::cout<<"("<<n->cell.x<<","<<n->cell.y<<")"<<std::endl;
             std::vector<Node*> kids = expand_node(n, distances, params);
             for (auto kid_: kids) {
                 // compute f of kid_
@@ -156,7 +164,9 @@ robot_path_t search_for_path(pose_xyt_t start,
                     find_path = true;
                     break;
                 }
-                if (not is_member_vector(kid_, closedList)) {
+                //change only check closedList to both openList and closedList
+                //because kid node may be push into heap several times
+                if (not is_member_vector(kid_, closedList)&& not openList.is_member(kid_)) {
                     openList.push(kid_);
                 }
 

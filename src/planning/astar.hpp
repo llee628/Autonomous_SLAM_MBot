@@ -51,10 +51,11 @@ struct PriorityQueue
         return Q.empty();
     }
 
+    //change n==node to *n==*node
     bool is_member(Node* n)
     {
         for(auto node: elements){
-            if(n == node){
+            if(*n == *node){
                 return true;
             }
         }
