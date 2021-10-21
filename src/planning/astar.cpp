@@ -59,6 +59,7 @@ std::vector<Node*> expand_node(Node* node, const ObstacleDistanceGrid& distances
         if(not distances.isCellInGrid(newX, newY)) { continue; }
         //obstacle node
         else if(distances(newX, newY)==0.0f){ continue; }
+        else if(distances(newX, newY) <= params.minDistanceToObstacle){ continue;}
         else {
             //update new kid
             Node *adjacentNode = new Node(newX, newY);
