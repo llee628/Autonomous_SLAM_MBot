@@ -33,6 +33,19 @@ void ObstacleDistanceGrid::setDistances(const OccupancyGrid& map)
     std::priority_queue<DistanceNode> searchQueue;
     enqueue_obstacle_cells(*this, searchQueue);
     ///////////// TODO: Implement an algorithm to mark the distance to the nearest obstacle for every cell in the map.
+    //empty case
+    if(searchQueue.empty()){
+        int width = map.widthInCells();
+        int height = map.heightInCells();
+        cell_t cell;
+
+        for(cell.y=0;cell.y<height;cell.y++){
+            for(cell.x=0;cell.x<width;cell.x++){
+                distance(cell.x, cell.y) = 1.0e6*metersPerCell();
+            }
+        }
+    }
+    //
     while(!searchQueue.empty()){
         DistanceNode nextNode = searchQueue.top();
         searchQueue.pop();
@@ -76,10 +89,12 @@ void ObstacleDistanceGrid::enqueue_obstacle_cells(ObstacleDistanceGrid& grid, st
     for(cell.y=0;cell.y<height;cell.y++){
         for(cell.x=0;cell.x<width;cell.x++){
             if(distance(cell.x, cell.y) == 0.0f){
-                expand_node(DistanceNode(cell, 0.0f), grid, searchQueue);
+                //expand_node(DistanceNode(cell, 0.0f), grid, searchQueue);
+                searchQueue.push(DistanceNode(cell, 0.0f));
             }
         }
     }
+    //otherwise set all cells of grid to all
 }
 void ObstacleDistanceGrid::expand_node(const DistanceNode& node, ObstacleDistanceGrid& grid, std::priority_queue<DistanceNode>& searchQueue){
     //do an eight-way adjacent cell search

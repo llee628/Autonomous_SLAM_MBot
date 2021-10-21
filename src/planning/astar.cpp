@@ -111,10 +111,27 @@ robot_path_t search_for_path(pose_xyt_t start,
     startNode->h_cost = h_cost(startNode, goalNode);
     startNode->parent = NULL;
 
+
+
     //set up a vector to store the node path of A* planning
     std::vector<Node*> nodepath_;
 
-    if(is_reached(startNode, goalNode))
+    int width = distances.widthInCells();
+    int height = distances.heightInCells();
+    for(int y=0;y<height;y++){
+        for(int x=0;x<width;x++){
+            std::cout<<distances(x,y)<<" ";
+        }
+        std::cout<<std::endl;
+    }
+    //check start point!
+    //std::cout<<distances(startCell.x, startCell.y)<<std::endl;
+
+
+    if(distances(startCell.x, startCell.y)==0.0f){
+        std::cout<<"fatal error!"<<std::endl;
+    }
+    else if(is_reached(startNode, goalNode))
     {
         nodepath_ = extract_node_path(startNode);
     }
@@ -154,6 +171,13 @@ robot_path_t search_for_path(pose_xyt_t start,
         // nodepath_ = NULL
     }
 
+    /*if(not nodepath_.empty()){
+        std::cout<<"Path:"<<std::endl;
+        for(auto p:nodepath_){
+            std::cout<<"("<<p->cell.x<<","<<p->cell.y<<")"<<"->";
+        }
+        std::cout<<std::endl;
+    }*/
     //get the node path
     //generate the robot path
     robot_path_t path;
@@ -171,5 +195,6 @@ robot_path_t search_for_path(pose_xyt_t start,
     path.utime = start.utime;
     path.path = extract_pose_path(nodepath_, distances);
     path.path_length = path.path.size();
+
     return path;
 }

@@ -54,6 +54,7 @@ bool MotionPlanner::isValidGoal(const pose_xyt_t& goal) const
     float distanceFromPrev = std::sqrt(dx * dx + dy * dy);
 
     //if there's more than 1 frontier, don't go to a target that is within a robot diameter of the current pose
+    //std::cout<<"frontiers:"<<num_frontiers<<"distance:"<<distanceFromPrev<<"min:"<<2 * searchParams_.minDistanceToObstacle<<std::endl;
     if(num_frontiers != 1 && distanceFromPrev < 2 * searchParams_.minDistanceToObstacle) return false;
 
     auto goalCell = global_position_to_grid_cell(Point<double>(goal.x, goal.y), distances_);
