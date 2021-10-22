@@ -3,6 +3,23 @@
 
 #include <common/point.hpp>
 #include <vector>
+#include <queue>
+
+typedef Point<int> cell_t;
+
+// DistanceNode contains the information of the node position and the distance from the obstacle
+struct DistanceNode{
+    cell_t cell;
+    float distance;
+
+    bool operator<(const DistanceNode& rhs) const{
+        return rhs.distance < distance;
+    }
+
+    DistanceNode(cell_t cell, float distance)
+    :cell(cell)
+    , distance(distance){}
+};
 
 class OccupancyGrid;
 
@@ -38,6 +55,8 @@ public:
     float cellsPerMeter(void) const { return cellsPerMeter_; }
     
     Point<float> originInGlobalFrame(void) const { return globalOrigin_; }
+
+    void initializeDistances(const OccupancyGrid& map);
     
     /**
     * setDistances sets the obstacle distances stored in the grid based on the provided occupancy grid map of the
@@ -81,6 +100,13 @@ private:
     Point<float> globalOrigin_;         ///< Origin of the grid in global coordinates
 
     void resetGrid(const OccupancyGrid& map);
+
+    // if cells in the grid, then add them to the search queue
+    void enqueue_obstacle_cells(ObstacleDistanceGrid& grid, std::priority_queue<DistanceNode>& searchQueue);
+
+    // for the given node, find the node of all its neighbor, anything not look at yet, put it in the 
+    // search queue
+    void expand_node(const DistanceNode& node, ObstacleDistanceGrid& grid, std::priority_queue<DistanceNode>& searchQueue);
     
     // Convert between cells and the underlying vector index
     int cellIndex(int x, int y) const { return y*width_ + x; }
