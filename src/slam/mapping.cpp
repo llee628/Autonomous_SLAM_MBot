@@ -47,7 +47,7 @@ void Mapping::scoreEndpoint(const adjusted_ray_t& ray, OccupancyGrid& map){
 void Mapping::scoreRay(const adjusted_ray_t& ray, OccupancyGrid& map){
     // TODO: implement the Breshenham’s line algorithm
     if(ray.range < kMaxLaserDistance_){
-        Point<float> rayStart = global_position_to_grid_cell(ray.origin, map);
+        Point<float> rayStart = global_position_to_grid_position(ray.origin, map);
         Point<int> rayOrigin;
         //start point of this beam
         Point<int> rayCell;
