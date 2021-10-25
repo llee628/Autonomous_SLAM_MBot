@@ -18,6 +18,12 @@ bool operator==(const pose_xyt_t& lhs, const pose_xyt_t& rhs)
 {
     return (lhs.x == rhs.x) && (lhs.y == rhs.y) && (lhs.theta == rhs.theta);
 }
+/*bool Exploration::isReachTarget(pose_xyt_t start, pose_xyt_t goal){
+    float dx = goal.x - start.x;
+    float dy = goal.y - goal.y;
+    float d = std::sqrt(dx*dx+dy*dy);
+    return d <= kReachedPositionThreshold;
+}*/
 
 
 Exploration::Exploration(int32_t teamNumber,
@@ -47,7 +53,7 @@ Exploration::Exploration(int32_t teamNumber,
     lcmInstance_->publish(EXPLORATION_STATUS_CHANNEL, &status);
     
     MotionPlannerParams params;
-    params.robotRadius = 0.2;
+    params.robotRadius = 0.11;
     planner_.setParams(params);
 }
 
@@ -245,7 +251,20 @@ int8_t Exploration::executeExploringMap(bool initialize)
     */
     
     /////////////////////////////// End student code ///////////////////////////////
-    
+    if(not isExploringMapInit){
+        frontiers_ = find_map_frontiers(currentMap_, currentPose_);
+        planner_ = planner_.setMap(currentMap_);
+        currentPath_ = plan_path_to_frontier(frontiers_, currentPose_, currentMap_, planner_);
+        currentTarget_ = currentPath_.path.back();
+        isExploringMapInit = true;
+    }
+
+    else if(distance_between_points(Point<float>(currentTarget_.x, currentTarget_.y),
+                                    Point<float>(currentPose_.x, currentPose_.y)) <= kReachedPositionThreshold){
+        frontiers_ = find_map_frontiers(currentMap_, currentPose_);
+        currentPath_ = plan_path_to_frontier(frontiers_, currentPose_, currentMap_, planner_);
+        currentTarget_ = currentPath_.path.back();
+    }
     /////////////////////////   Create the status message    //////////////////////////
     exploration_status_t status;
     status.utime = utime_now();
@@ -301,8 +320,12 @@ int8_t Exploration::executeReturningHome(bool initialize)
     *       (1) dist(currentPose_, targetPose_) < kReachedPositionThreshold  :  reached the home pose
     *       (2) currentPath_.path_length > 1  :  currently following a path to the home pose
     */
-    
-
+    if(not isReturningHomeInit){
+        planner_.setMap(currentMap_);
+        currentPath_ = planner_.planPath(currentPose_, homePose_);
+        currentTarget_ = homePose_;
+        isReturningHomeInit = true;
+    }
 
     /////////////////////////////// End student code ///////////////////////////////
     

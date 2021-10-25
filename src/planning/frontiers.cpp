@@ -100,7 +100,36 @@ robot_path_t plan_path_to_frontier(const std::vector<frontier_t>& frontiers,
     *       be able to drive straight to a frontier cell, but will need to drive somewhere close.
     */
     robot_path_t emptyPath;
-    
+    //the center of each frontier
+    std::vector<Point<float>> centerCells;
+    for(auto f: frontiers){
+        Point<float> center(0.0f,0.0f);
+        for(auto c: f.cells){
+            center.x += c.x;
+            center.y += c.y;
+        }
+        center.x /= f.cells.size();
+        center.y /= f.cells.size();
+        centerCells.push_back(center);
+    }
+    std::vector<float>distToRobot;
+    for(auto c:centerCells){
+        float dx = c.x - robotPose.x;
+        float dy = c.y - robotPose.y;
+        float distance = std::sqrt(dx*dx+dy*dy);
+        distToRobot.push_back(distance);
+    }
+    int idx = std::distance(distToRobot.begin(),std::min_element(distToRobot.begin(), distToRobot.end()));
+
+    pose_xyt_t frontier_goal;
+    frontier_goal.x = centerCells.at(idx).x;
+    frontier_goal.y = centerCells.at(idx).y;
+
+
+
+    emptyPath = planner.planPath(robotPose, frontier_goal);
+
+    //also can find the nearest cell on free space;
     return emptyPath;
 }
 

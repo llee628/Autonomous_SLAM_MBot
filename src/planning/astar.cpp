@@ -59,7 +59,7 @@ std::vector<Node*> expand_node(Node* node, const ObstacleDistanceGrid& distances
         if(not distances.isCellInGrid(newX, newY)) { continue; }
         //obstacle node
         else if(distances(newX, newY)==0.0f){ continue; }
-        else if(distances(newX, newY) <= 1.5*params.minDistanceToObstacle){ continue;}
+        else if(distances(newX, newY) <= 1.0f*params.minDistanceToObstacle){ continue;}
         else {
             //update new kid
             Node *adjacentNode = new Node(newX, newY);
@@ -85,12 +85,23 @@ std::vector<Node*> extract_node_path(Node* node){
 std::vector<pose_xyt_t> extract_pose_path(std::vector<Node*>& nodePath, const ObstacleDistanceGrid& distances){
     //convert node path to global pose_xyt;
     std::vector<pose_xyt_t> posepath_;
+    pose_xyt_t pPrev;
+    bool setPrev = false;
     for(auto n: nodePath){
         pose_xyt_t p;
         Point<double> pGlobal = grid_position_to_global_position(n->cell, distances);
         p.x = pGlobal.x;
         p.y = pGlobal.y;
+        if(not setPrev){
+            setPrev = true;
+        }
+        else{
+            p.theta = std::atan2(p.y - pPrev.y, p.x - pPrev.x);
+        }
         //what about theta and utime?
+        pPrev.x = p.x;
+        pPrev.y = p.y;
+        pPrev.theta = p.theta;
         posepath_.push_back(p);
     }
     return posepath_;
@@ -206,6 +217,8 @@ robot_path_t search_for_path(pose_xyt_t start,
     path.utime = start.utime;
     path.path = extract_pose_path(nodepath_, distances);
     path.path_length = path.path.size();
+
+    //refresh the memory for Node*
 
     return path;
 }

@@ -77,8 +77,17 @@ bool MotionPlanner::isPathSafe(const robot_path_t& path) const
 {
 
     ///////////// TODO: Implement your test for a safe path here //////////////////
-
-    return true;
+    bool safeflag = true;
+    for(auto p: path.path){
+        auto p_cell = global_position_to_grid_cell(Point<double>(p.x, p.y), distances_);
+        bool flag = distances_(p_cell.x, p_cell.y)>= 1.0f*searchParams_.minDistanceToObstacle;
+        if(not flag){
+            //not a safe point in the whole path;
+            safeflag = false;
+            break;
+        }
+    }
+    return safeflag;
 }
 
 
