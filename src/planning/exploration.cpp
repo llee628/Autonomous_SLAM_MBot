@@ -11,6 +11,8 @@
 #include <unistd.h>
 #include <cassert>
 
+#include <common/angle_functions.hpp>
+
 const float kReachedPositionThreshold = 0.06f;  // must get within this distance of a position for it to be explored
 
 // Define an equality operator for poses to allow direct comparison of two paths
@@ -258,6 +260,9 @@ int8_t Exploration::executeExploringMap(bool initialize)
         frontiers_ = find_map_frontiers(currentMap_, currentPose_);
         currentPath_ = plan_path_to_frontier(frontiers_, currentPose_, currentMap_, planner_);
         currentTarget_ = currentPath_.path.back();
+        // store currentPath_ to the Buffer
+        pathBuffer_.insert(pathBuffer_.end(), currentPath_.path.begin(), currentPath_.path.end());
+
         isExploringMapInit = true;
     }
 
@@ -269,7 +274,9 @@ int8_t Exploration::executeExploringMap(bool initialize)
         frontiers_ = find_map_frontiers(currentMap_, currentPose_);
         if(not frontiers_.empty()){
         currentPath_ = plan_path_to_frontier(frontiers_, currentPose_, currentMap_, planner_);
-        currentTarget_ = currentPath_.path.back();}
+        currentTarget_ = currentPath_.path.back();
+        pathBuffer_.insert(pathBuffer_.end(), currentPath_.path.begin(), currentPath_.path.end());
+        }
 
     }
     /////////////////////////   Create the status message    //////////////////////////
@@ -332,9 +339,46 @@ int8_t Exploration::executeReturningHome(bool initialize)
     std::cout<<"_________________________________"<<std::endl;
     std::cout<<"Ok, you are going to return home!"<<std::endl;
     if(not isReturningHomeInit){
-        planner_.setMap(currentMap_);
+
+        //plan 1: use astar to plan
+        /*planner_.setMap(currentMap_);
         currentPath_ = planner_.planPath(currentPose_, homePose_);
+        currentTarget_ = homePose_;*/
+
+        //plan 2: store way points and replay
+        std::reverse(pathBuffer_.begin(), pathBuffer_.end());
+        std::vector<pose_xyt_t> returnPath;
+        for(auto p: pathBuffer_){
+            pose_xyt_t node;
+            node.x = p.x;
+            node.y = p.y;
+            node.theta = angle_sum(p.theta, 3.1415926);
+            returnPath.push_back(node);
+        }
+        /*pose_xyt_t pPrev;
+        bool setPrev = false;
+        for(auto p: pathBuffer_){
+
+            if(not setPrev){
+                setPrev = true;
+            }
+            else{
+                p.theta = std::atan2(p.y - pPrev.y, p.x - pPrev.x);
+            }
+            //what about theta and utime?
+            pPrev.x = p.x;
+            pPrev.y = p.y;
+            pPrev.theta = p.theta;
+        }*/
+
+        robot_path_t path;
+        path.utime = currentPose_.utime;
+        //path.path = pathBuffer_;
+        path.path = returnPath;
+        path.path_length = path.path.size();
+        currentPath_ = path;
         currentTarget_ = homePose_;
+
         isReturningHomeInit = true;
     }
 

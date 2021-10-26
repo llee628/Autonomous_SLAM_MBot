@@ -102,6 +102,7 @@ private:
     /////////// TODO: Add any state variables you might need here //////////////
     bool isExploringMapInit = false;
     bool isReturningHomeInit = false;
+    std::vector<pose_xyt_t> pathBuffer_;
     
     pose_xyt_t   currentTarget_;    // Current target robot is driving to
     OccupancyGrid exploredMap_;     // Map found after completing the RETURNING_HOME state
