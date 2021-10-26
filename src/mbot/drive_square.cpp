@@ -6,6 +6,8 @@
 #include <unistd.h>
 #include <cmath>
 
+const float SQUARE_WIDTH = 0.7f;
+
 int main(int argc, char** argv)
 {std::cout << "here" <<std::endl;
     int numTimes = 1;
@@ -24,7 +26,7 @@ int main(int argc, char** argv)
 
 
 
-    nextPose.x = 1.0f;
+    nextPose.x = SQUARE_WIDTH;
     nextPose.y = 0.0f;
     nextPose.theta = M_PI_2;
     for(int n = 0; n < numTimes; ++n)
@@ -32,8 +34,8 @@ int main(int argc, char** argv)
         path.path[4*n] = nextPose;
     }
     
-    nextPose.x = 1.0f;
-    nextPose.y = 1.0f;
+    nextPose.x = SQUARE_WIDTH;
+    nextPose.y = SQUARE_WIDTH;
     nextPose.theta = -M_PI;
     for(int n = 0; n < numTimes; ++n)
     {
@@ -41,7 +43,7 @@ int main(int argc, char** argv)
     }
     
     nextPose.x = 0.0f;
-    nextPose.y = 1.0f;
+    nextPose.y = SQUARE_WIDTH;
     nextPose.theta = -M_PI_2;
     for(int n = 0; n < numTimes; ++n)
     {
