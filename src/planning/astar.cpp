@@ -47,6 +47,85 @@ double g_cost(Node* from, Node* to, const ObstacleDistanceGrid& distances, const
     return from->g_cost+std::sqrt(dx*dx+dy*dy);
 }
 
+bool check_collision_free(Node* from, Node* to, const ObstacleDistanceGrid& distances, const SearchParams& params){
+    Point<int> start;
+    //start point
+    Point<int> goal;
+    //end point
+    start.x = from->cell.x;
+    start.y = from->cell.y;
+    goal.x = to->cell.x;
+    goal.y = to->cell.y;
+
+    int dx = std::abs(goal.x - start.x);
+    int dy = std::abs(goal.y - start.y);
+    int sx, sy;
+    int x, y, err, e2;
+    // the step to take
+    if(start.x<goal.x){
+        sx = 1;
+    }
+    else{
+        sx = -1;
+    }
+    if(start.y<goal.y){
+        sy = 1;
+    }
+    else{
+        sy = -1;
+    }
+    err = dx - dy;
+    x = start.x;
+    y = start.y;
+    while(x!=goal.x||y!=goal.y){
+        if(distances(x, y)<=1.0f*params.minDistanceToObstacle){
+            return false;
+        }
+        //decreaseCellOdds(x, y, map);
+        e2 = 2*err;
+        if(e2>=-dy){
+            err -= dy;
+            x += sx;
+        }
+        if(e2<=dx){
+            err += dx;
+            y += sy;
+        }
+    }
+    return true;
+}
+
+
+std::vector<Node*> smooth_path(const std::vector<Node*>& n, const ObstacleDistanceGrid& distances, const SearchParams& params){
+    std::vector<Node*> node;
+    int i = 0;
+    int j = 0;
+    int max = n.size()-1;
+    node.push_back(n.at(i));
+    while(j<max){
+        j = i+10;
+        if(j>=max) j=max;
+        if(check_collision_free(n.at(i), n.at(j), distances, params)){
+            node.push_back(n.at(j));
+            i = j;
+        }
+        else{
+            j = i+5;
+            if(j>=max) j=max;
+            if(check_collision_free(n.at(i), n.at(j), distances, params)){
+                node.push_back(n.at(j));
+                i = j;
+            }
+            else{
+                j = i+1;
+                node.push_back(n.at(j));
+                i = j;
+            }
+        }
+    }
+    return node;
+}
+
 std::vector<Node*> expand_node(Node* node, const ObstacleDistanceGrid& distances, const SearchParams& params){
     //do an 8-way search;
     std::vector<Node*> children;
@@ -213,6 +292,9 @@ robot_path_t search_for_path(pose_xyt_t start,
     }
     else{
         std::cout<<"Great. you get path!"<<std::endl;
+        std::cout<<"Now. smooth your path!"<<std::endl;
+        nodepath_ = smooth_path(nodepath_, distances, params);
+
     }
     /*robot_path_t path;
     path.utime = start.utime;

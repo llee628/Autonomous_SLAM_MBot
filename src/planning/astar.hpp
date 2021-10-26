@@ -122,6 +122,8 @@ std::vector<Node*> extract_node_path(Node* node);
 std::vector<pose_xyt_t> extract_pose_path(std::vector<Node*>& nodePath, const ObstacleDistanceGrid& distances);
 bool is_member_vector(Node* node, std::vector<Node*>& elements);
 bool is_reached(Node* node, Node* goal);
+bool check_collision_free(Node* from, Node* to, const ObstacleDistanceGrid& distances, const SearchParams& params);
+std::vector<Node*> smooth_path(const std::vector<Node*>& n, const ObstacleDistanceGrid& distances, const SearchParams& params);
 
 
 /**
