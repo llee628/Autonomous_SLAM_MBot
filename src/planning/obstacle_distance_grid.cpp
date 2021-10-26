@@ -36,6 +36,19 @@ void ObstacleDistanceGrid::setDistances(const OccupancyGrid& map)
     std::priority_queue<DistanceNode> searchQueue;
     enqueue_obstacle_cells(*this, searchQueue);
 
+    if (searchQueue.empty()){ // means there is no obstacle in the grid
+        // means each cell is infinite with the obstacle
+        int width = map.widthInCells();
+        int height = map.heightInCells();
+        cell_t cell;
+
+        for (cell.y = 0; cell.y < height; cell.y++){
+            for (cell.x = 0; cell.x < width; cell.x++){
+                distance(cell.x, cell.y) = 1.0E6 * metersPerCell();
+            }
+        }
+    }
+
     while (!searchQueue.empty()){
         DistanceNode nextNode = searchQueue.top();
         searchQueue.pop();
@@ -79,8 +92,10 @@ void ObstacleDistanceGrid::enqueue_obstacle_cells(
 
     for (cell.y = 0; cell.y < height; cell.y++){
         for (cell.x = 0; cell.x < width; cell.x++){
-            if (std::abs(distance(cell.x, cell.y) - 0.0) < 1E-6){
-                expand_node(DistanceNode(cell, 0.0), grid, searchQueue);
+            //if (std::abs(distance(cell.x, cell.y) - 0.0) < 1E-6){
+            if (distance(cell.x, cell.y) == 0.0f){
+                //expand_node(DistanceNode(cell, 0.0), grid, searchQueue);
+                searchQueue.push(DistanceNode(cell, 0.0f));
 
             }
         }
@@ -94,16 +109,17 @@ void ObstacleDistanceGrid::expand_node(
     
     // eight way search
     const int WAYS = 8;
-    const int xDeltas[WAYS] = {1, 1, 1, 0, 0, -1, -1, -1};
-    const int yDeltas[WAYS] = {0, 1, -1, -1, 1, 1, -1, 0};
+    const int xDeltas[WAYS] = {1, -1, 0, 0, 1, 1, -1, -1};
+    const int yDeltas[WAYS] = {0, 0, 1, -1, 1, -1, 1, -1};
 
     for (int i = 0; i < WAYS; i++){
         cell_t adjacentCell(node.cell.x + xDeltas[i], node.cell.y + yDeltas[i]);
         if (grid.isCellInGrid(adjacentCell.x, adjacentCell.y)){
-            if(std::abs(grid(adjacentCell.x, adjacentCell.y) - (-1.0)) < 1E-6){
+            //if(std::abs(grid(adjacentCell.x, adjacentCell.y) - (-1.0)) < 1E-6){
+            if (grid(adjacentCell.x, adjacentCell.y) == -1.0f){
                 // float step_distance = std::sqrt(xDeltas[i] * xDeltas[i] + yDeltas[i] * yDeltas[i]);
                 // DistanceNode adjacentNode(adjacentCell, node.distance + step_distance);
-                DistanceNode adjacentNode(adjacentCell, node.distance + 1); // if diagonol, should be 1.414
+                DistanceNode adjacentNode(adjacentCell, node.distance + 1.0f); // if diagonol, should be 1.414
                 grid(adjacentCell.x, adjacentCell.y) = adjacentNode.distance * grid.metersPerCell(); // why need grid.metersPerCell()?
                 searchQueue.push(adjacentNode);
             }
