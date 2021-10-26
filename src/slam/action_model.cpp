@@ -6,7 +6,7 @@
 #include <iostream>
 
 #define K1      0.01f
-#define K2      0.01f
+#define K2      0.0001f
 #define K3      0.0001f
 #define K4      0.00000001f
 

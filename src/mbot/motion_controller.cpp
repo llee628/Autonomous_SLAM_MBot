@@ -17,8 +17,9 @@
 #include <signal.h>
 #include "maneuver_controller.h"
 
-#define Vmax 0.8
-#define Wmax M_PI
+#define Vmax                    0.5
+#define Wmax                    M_PI/2
+#define STRAIGHT_THREAD         0.09       // 0.05
 
 
 /////////////////////// TODO: /////////////////////////////
@@ -45,8 +46,8 @@ public:
         /**
         * Send the command to go straight.
         */
-        const float Kv = 1.5;
-        const float Kw = 1.6;
+        const float Kv = 1.2;
+        const float Kw = 1.4;
         float dx = target.x - pose.x;
         float dy = target.y - pose.y;
         float d = sqrt(pow(dx, 2) + pow(dy, 2));
@@ -76,7 +77,7 @@ public:
 
     virtual bool target_reached(const pose_xyt_t& pose, const pose_xyt_t& target)  override
     {
-        return ((fabs(pose.x - target.x) < 0.05) && (fabs(pose.y - target.y)  < 0.05));
+        return ((fabs(pose.x - target.x) < STRAIGHT_THREAD) && (fabs(pose.y - target.y)  < STRAIGHT_THREAD));
     }
 };
 
@@ -89,7 +90,7 @@ public:
         /**
         * Send the command to turn.
         */
-        const float Kw = 2.0;
+        const float Kw = 1.5;
         float beta = angle_diff(target.theta, pose.theta);
         float w = Kw * beta;
         
@@ -127,7 +128,7 @@ public:
         /**
         * Send the command to turn.
         */
-        const float Kw = 2.0;
+        const float Kw = 1.5;
         float dx = target.x - pose.x;
         float dy = target.y - pose.y;
         float target_heading = atan2(dy, dx);
