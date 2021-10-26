@@ -53,7 +53,7 @@ Exploration::Exploration(int32_t teamNumber,
     lcmInstance_->publish(EXPLORATION_STATUS_CHANNEL, &status);
     
     MotionPlannerParams params;
-    params.robotRadius = 0.11;
+    params.robotRadius = 0.11f;
     planner_.setParams(params);
 }
 
@@ -301,6 +301,8 @@ int8_t Exploration::executeExploringMap(bool initialize)
             
         // If exploration is completed, then head home
         case exploration_status_t::STATUS_COMPLETE:
+            std::cout<<"___________________________"<<std::endl;
+            std::cout<<"Exploration Finished!"<<std::endl;
             return exploration_status_t::STATE_RETURNING_HOME;
             
         // If something has gone wrong and we can't reach all frontiers, then fail the exploration.
@@ -323,6 +325,8 @@ int8_t Exploration::executeReturningHome(bool initialize)
     *       (1) dist(currentPose_, targetPose_) < kReachedPositionThreshold  :  reached the home pose
     *       (2) currentPath_.path_length > 1  :  currently following a path to the home pose
     */
+    std::cout<<"_________________________________"<<std::endl;
+    std::cout<<"Ok, you are going to return home!"<<std::endl;
     if(not isReturningHomeInit){
         planner_.setMap(currentMap_);
         currentPath_ = planner_.planPath(currentPose_, homePose_);

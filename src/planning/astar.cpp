@@ -205,10 +205,14 @@ robot_path_t search_for_path(pose_xyt_t start,
     robot_path_t path;
 
     if(nodepath_.empty()){
+        std::cout<<"Oh no. no path, please!"<<std::endl;
         path.utime = start.utime;
         path.path.push_back(start);
         path.path_length = path.path.size();
         return path;
+    }
+    else{
+        std::cout<<"Great. you get path!"<<std::endl;
     }
     /*robot_path_t path;
     path.utime = start.utime;

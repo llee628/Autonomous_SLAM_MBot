@@ -127,10 +127,11 @@ robot_path_t plan_path_to_frontier(const std::vector<frontier_t>& frontiers,
     frontier_goal.y = centerCells.at(idx).y;
     std::cout<<"Frontier_Goal: ("<<frontier_goal.x<<","<<frontier_goal.y<<")"<<std::endl;
     //find the nearest free space of the frontier_goal;
+
     pose_xyt_t robotGoal;
     std::set<Point<int>> visitedCells;
     std::queue<Point<int>> cellQueue;
-    Point<int> frontierGoalCell = global_position_to_grid_cell(Point<double>(frontier_goal.x, frontier_goal.x),map);
+    Point<int> frontierGoalCell = global_position_to_grid_cell(Point<double>(frontier_goal.x, frontier_goal.y),map);
     cellQueue.push(frontierGoalCell);
     visitedCells.insert(frontierGoalCell);
 
@@ -141,10 +142,12 @@ robot_path_t plan_path_to_frontier(const std::vector<frontier_t>& frontiers,
     while(not cellQueue.empty()){
         Point<int> nextCell = cellQueue.front();
         cellQueue.pop();
-        std::cout<<"("<<nextCell.x<<","<<nextCell.y<<") :"<<planner.obstacleDistances()(nextCell.x, nextCell.y)<<std::endl;
-        if(planner.obstacleDistances()(nextCell.x, nextCell.y) > 0.11f){
+        //std::cout<<"("<<nextCell.x<<","<<nextCell.y<<") :"<<planner.obstacleDistances()(nextCell.x, nextCell.y)<<std::endl;
+        if(planner.obstacleDistances()(nextCell.x, nextCell.y) > 2*0.11f){
             //planner.obstacleDistances()(nextCell.x, nextCell.y) > 0.11f
             //hard code
+            std::cout<<"Temp Target Gird: ("<<nextCell.x<<","<<nextCell.y<<")"<<std::endl;
+            std::cout<<"TargetObstacleDistance: "<<planner.obstacleDistances()(nextCell.x, nextCell.y)<<std::endl;
             Point<double> tar = grid_position_to_global_position(nextCell, map);
             robotGoal.x = tar.x;
             robotGoal.y = tar.y;
@@ -166,8 +169,9 @@ robot_path_t plan_path_to_frontier(const std::vector<frontier_t>& frontiers,
 
 
     std::cout<<"Temp Target: ("<<robotGoal.x<<","<<robotGoal.y<<")"<<std::endl;
+    std::cout<<"TargetObstacleDistance: "<<planner.obstacleDistances()(robotGoal.x, robotGoal.y)<<std::endl;
     emptyPath = planner.planPath(robotPose, robotGoal);
-
+    //emptyPath = planner.planPath(robotPose, frontier_goal);
     //also can find the nearest cell on free space;
     return emptyPath;
 }
