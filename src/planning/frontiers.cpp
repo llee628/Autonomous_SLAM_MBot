@@ -99,6 +99,7 @@ robot_path_t plan_path_to_frontier(const std::vector<frontier_t>& frontiers,
     *   - The cells along the frontier might not be in the configuration space of the robot, so you won't necessarily
     *       be able to drive straight to a frontier cell, but will need to drive somewhere close.
     */
+    std::cout<<"started to find path"<<std::endl;
     robot_path_t emptyPath;
     //the center of each frontier
     std::vector<Point<float>> centerCells;
@@ -124,10 +125,48 @@ robot_path_t plan_path_to_frontier(const std::vector<frontier_t>& frontiers,
     pose_xyt_t frontier_goal;
     frontier_goal.x = centerCells.at(idx).x;
     frontier_goal.y = centerCells.at(idx).y;
+    std::cout<<"Frontier_Goal: ("<<frontier_goal.x<<","<<frontier_goal.y<<")"<<std::endl;
+    //find the nearest free space of the frontier_goal;
+    pose_xyt_t robotGoal;
+    std::set<Point<int>> visitedCells;
+    std::queue<Point<int>> cellQueue;
+    Point<int> frontierGoalCell = global_position_to_grid_cell(Point<double>(frontier_goal.x, frontier_goal.x),map);
+    cellQueue.push(frontierGoalCell);
+    visitedCells.insert(frontierGoalCell);
+
+    const int kNumNeighbors = 4;
+    const int xDeltas[] = { -1, 1, 0, 0 };
+    const int yDeltas[] = { 0, 0, 1, -1 };
+
+    while(not cellQueue.empty()){
+        Point<int> nextCell = cellQueue.front();
+        cellQueue.pop();
+        std::cout<<"("<<nextCell.x<<","<<nextCell.y<<") :"<<planner.obstacleDistances()(nextCell.x, nextCell.y)<<std::endl;
+        if(planner.obstacleDistances()(nextCell.x, nextCell.y) > 0.11f){
+            //planner.obstacleDistances()(nextCell.x, nextCell.y) > 0.11f
+            //hard code
+            Point<double> tar = grid_position_to_global_position(nextCell, map);
+            robotGoal.x = tar.x;
+            robotGoal.y = tar.y;
+            break;
+        }
+        else{
+            for(int n = 0; n < kNumNeighbors; ++n){
+                Point<int> neighbor(nextCell.x + xDeltas[n], nextCell.y + yDeltas[n]);
+                if(visitedCells.find(neighbor) == visitedCells.end()&&map.isCellInGrid(neighbor.x, neighbor.y))
+                {
+                    visitedCells.insert(neighbor);
+                    cellQueue.push(neighbor);
+                }
+
+            }
+        }
+    }
 
 
 
-    emptyPath = planner.planPath(robotPose, frontier_goal);
+    std::cout<<"Temp Target: ("<<robotGoal.x<<","<<robotGoal.y<<")"<<std::endl;
+    emptyPath = planner.planPath(robotPose, robotGoal);
 
     //also can find the nearest cell on free space;
     return emptyPath;

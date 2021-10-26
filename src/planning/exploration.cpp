@@ -252,8 +252,8 @@ int8_t Exploration::executeExploringMap(bool initialize)
     
     /////////////////////////////// End student code ///////////////////////////////
     if(not isExploringMapInit){
+        planner_.setMap(currentMap_);
         frontiers_ = find_map_frontiers(currentMap_, currentPose_);
-        planner_ = planner_.setMap(currentMap_);
         currentPath_ = plan_path_to_frontier(frontiers_, currentPose_, currentMap_, planner_);
         currentTarget_ = currentPath_.path.back();
         isExploringMapInit = true;
@@ -261,6 +261,9 @@ int8_t Exploration::executeExploringMap(bool initialize)
 
     else if(distance_between_points(Point<float>(currentTarget_.x, currentTarget_.y),
                                     Point<float>(currentPose_.x, currentPose_.y)) <= kReachedPositionThreshold){
+        std::cout<<"Target reached!!!!!"<<std::endl;
+        std::cout<<"Start to a new Target"<<std::endl;
+        planner_.setMap(currentMap_);
         frontiers_ = find_map_frontiers(currentMap_, currentPose_);
         currentPath_ = plan_path_to_frontier(frontiers_, currentPose_, currentMap_, planner_);
         currentTarget_ = currentPath_.path.back();
