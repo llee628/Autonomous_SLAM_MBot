@@ -13,7 +13,7 @@
 
 #include <common/angle_functions.hpp>
 
-const float kReachedPositionThreshold = 0.06f;  // must get within this distance of a position for it to be explored
+const float kReachedPositionThreshold = 0.07f;  // must get within this distance of a position for it to be explored
 
 // Define an equality operator for poses to allow direct comparison of two paths
 bool operator==(const pose_xyt_t& lhs, const pose_xyt_t& rhs)
@@ -275,7 +275,7 @@ int8_t Exploration::executeExploringMap(bool initialize)
         if(not frontiers_.empty()){
         currentPath_ = plan_path_to_frontier(frontiers_, currentPose_, currentMap_, planner_);
         currentTarget_ = currentPath_.path.back();
-        pathBuffer_.insert(pathBuffer_.end(), currentPath_.path.begin(), currentPath_.path.end());
+        pathBuffer_.insert(pathBuffer_.end(), currentPath_.path.begin()+1, currentPath_.path.end());
         }
 
     }

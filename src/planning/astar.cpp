@@ -98,25 +98,27 @@ bool check_collision_free(Node* from, Node* to, const ObstacleDistanceGrid& dist
 
 
 std::vector<Node*> smooth_path(const std::vector<Node*>& n, const ObstacleDistanceGrid& distances, const SearchParams& params){
+    //Previous number 10, 5, 1;
     std::vector<Node*> node;
     int i = 0;
     int j = 0;
     int max = n.size()-1;
     node.push_back(n.at(i));
     while(j<max){
-        j = i+10;
+        j = i+4;
         if(j>=max) j=max;
         if(check_collision_free(n.at(i), n.at(j), distances, params)){
             node.push_back(n.at(j));
             i = j;
         }
         else{
-            j = i+5;
+            j = i+2;
             if(j>=max) j=max;
             if(check_collision_free(n.at(i), n.at(j), distances, params)){
                 node.push_back(n.at(j));
                 i = j;
             }
+
             else{
                 j = i+1;
                 node.push_back(n.at(j));

@@ -10,6 +10,7 @@ Mapping::Mapping(float maxLaserDistance, int8_t hitOdds, int8_t missOdds)
 , kHitOdds_(hitOdds)
 , kMissOdds_(missOdds)
 {
+    initialized_ = false;
 }
 
 
