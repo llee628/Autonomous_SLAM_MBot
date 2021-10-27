@@ -44,7 +44,8 @@ double g_cost(Node* from, Node* to, const ObstacleDistanceGrid& distances, const
     int dy;
     dx = to->cell.x - from->cell.x;
     dy = to->cell.y - from->cell.y;
-    return from->g_cost+std::sqrt(dx*dx+dy*dy);
+    return from->g_cost+std::sqrt(dx*dx+dy*dy) + 5*std::pow(params.maxDistanceWithCost - distances(to->cell.x, to->cell.y), params.distanceCostExponent);
+    //return from->g_cost+std::sqrt(dx*dx+dy*dy);
 }
 
 bool check_collision_free(Node* from, Node* to, const ObstacleDistanceGrid& distances, const SearchParams& params){
