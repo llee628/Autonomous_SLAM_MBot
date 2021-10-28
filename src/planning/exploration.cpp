@@ -355,6 +355,8 @@ int8_t Exploration::executeReturningHome(bool initialize)
             node.theta = angle_sum(p.theta, 3.1415926);
             returnPath.push_back(node);
         }
+        returnPath.push_back(homePose_);
+
         /*pose_xyt_t pPrev;
         bool setPrev = false;
         for(auto p: pathBuffer_){
@@ -393,7 +395,7 @@ int8_t Exploration::executeReturningHome(bool initialize)
     double distToHome = distance_between_points(Point<float>(homePose_.x, homePose_.y), 
                                                 Point<float>(currentPose_.x, currentPose_.y));
     // If we're within the threshold of home, then we're done.
-    if(distToHome <= kReachedPositionThreshold)
+    if(distToHome <= 0.03f)
     {
         status.status = exploration_status_t::STATUS_COMPLETE;
     }
