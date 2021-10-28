@@ -10,10 +10,39 @@ ObstacleDistanceGrid::ObstacleDistanceGrid(void)
 {
 }
 
+void ObstacleDistanceGrid::initializeDistances(const OccupancyGrid& map)
+{
+    int width  = map.widthInCells();
+    int height = map.heightInCells();
+    
+    for(int y = 0 ; y < height ; y++){
+        for(int x = 0 ; x < width ; x++){
+            if(map.logOdds(x,y) < 0){
+                distance(x,y) = -1.0f;
+            } else{
+                distance(x,y) = 0.0f;
+            }
+        }
+    }
+}
+
 
 void ObstacleDistanceGrid::setDistances(const OccupancyGrid& map)
 {
+    // run brushfire algorithm to set all distances for cells in map
     resetGrid(map);
+    initializeDistances(map);
+
+    // use priority queue
+    std::priority_queue<DistanceNode> searchQueue;
+
+    enqueue_obstacle_cells(*this , searchQueue); //queue the obstacle cells
+
+    while(!searchQueue.empty()){ //while we have things to search
+        DistanceNode nextNode = searchQueue.top();
+        searchQueue.pop();
+        expand_node(nextNode , *this , searchQueue);
+    }
     
     ///////////// TODO: Implement an algorithm to mark the distance to the nearest obstacle for every cell in the map.
 }
@@ -43,4 +72,38 @@ void ObstacleDistanceGrid::resetGrid(const OccupancyGrid& map)
     height_ = map.heightInCells();
     
     cells_.resize(width_ * height_);
+
+}
+
+void ObstacleDistanceGrid::enqueue_obstacle_cells(ObstacleDistanceGrid& grid , std::priority_queue<DistanceNode>& searchQueue){
+    int  width = grid.widthInCells();
+    int height = grid.heightInCells();
+    cell_t cell;
+
+    for(cell.y = 0; cell.y < height ; cell.y++){
+        for(cell.x = 0 ; cell.x < width ; cell.x++){
+            if(distance(cell.x , cell.y) == 0.0f){
+                expand_node(DistanceNode(cell , 0.0f) , grid , searchQueue);
+            }
+        }
+    }
+}
+
+void ObstacleDistanceGrid::expand_node(const DistanceNode& node, ObstacleDistanceGrid& grid, std::priority_queue<DistanceNode>& searchQueue){
+    const int xDeltas[8] = {1, 1, 1, 0, 0, -1, -1, -1};
+    const int yDeltas[8] = {0, 1, -1, -1, 1, 1, -1, 0};
+
+for(int i = 0 ; i < 8 ; i++){
+    cell_t adjacentCell(node.cell.x + xDeltas[i], node.cell.y + yDeltas[i]);
+
+    if(grid.isCellInGrid(adjacentCell.x , adjacentCell.y)){
+        if(grid(adjacentCell.x , adjacentCell.y) == -1.0f){
+            DistanceNode adjacentNode(adjacentCell, node.distance + 1.0f);
+            //change this so we increase distances by 1 for 4 ways, then by ~1.4 for diags
+            grid(adjacentCell.x , adjacentCell.y) = adjacentNode.distance * grid.metersPerCell();
+            searchQueue.push(adjacentNode);
+        }
+    }
+}
+
 }

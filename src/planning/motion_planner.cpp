@@ -5,6 +5,8 @@
 #include <lcmtypes/robot_path_t.hpp>
 #include <cmath>
 
+//ctrl click or right click (odom or slam) to set path for A* to plan in botgui
+
 
 MotionPlanner::MotionPlanner(const MotionPlannerParams& params)
 : params_(params)

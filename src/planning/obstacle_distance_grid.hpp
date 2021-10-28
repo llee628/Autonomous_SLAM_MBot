@@ -3,6 +3,24 @@
 
 #include <common/point.hpp>
 #include <vector>
+#include <queue>
+
+typedef Point<int> cell_t;
+
+struct DistanceNode{
+    cell_t cell; //location
+    float distance; //distance in cells away from obstical
+
+    bool operator<(const DistanceNode& rhs) const{ //sort so rh dist < dist
+        return rhs.distance < distance;
+    }
+
+    DistanceNode(cell_t cell , float distance)
+    :cell(cell)
+    , distance(distance)
+    {}
+};
+
 
 class OccupancyGrid;
 
@@ -38,6 +56,8 @@ public:
     float cellsPerMeter(void) const { return cellsPerMeter_; }
     
     Point<float> originInGlobalFrame(void) const { return globalOrigin_; }
+
+    void initializeDistances(const OccupancyGrid& map);
     
     /**
     * setDistances sets the obstacle distances stored in the grid based on the provided occupancy grid map of the
@@ -58,6 +78,11 @@ public:
     */
     bool isCellInGrid(int x, int y) const;
     
+
+    void enqueue_obstacle_cells(ObstacleDistanceGrid& grid , std::priority_queue<DistanceNode>& searchQueue);
+
+    void expand_node(const DistanceNode& node, ObstacleDistanceGrid& grid, std::priority_queue<DistanceNode>& searchQueue);
+
     /**
     * operator() provides unchecked access to the cell located at (x,y). If the cell isn't contained in the grid,
     * expect fireworks or a slow, ponderous death.
