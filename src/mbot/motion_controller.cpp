@@ -17,9 +17,13 @@
 #include <signal.h>
 #include "maneuver_controller.h"
 
-#define Vmax                    0.5
-#define Wmax                    M_PI/2
-#define STRAIGHT_THREAD         0.09       // 0.05
+#define Vmax                    0.15
+#define Wmax                    M_PI/4      //M_PI/2
+#define STRAIGHT_WMAX           M_PI/2
+#define STRAIGHT_THREAD         0.02       // 0.05
+#define ROTATE1_THREAD          0.01       //0.01
+#define ROTATE2_THREAD          0.07       
+ 
 
 
 /////////////////////// TODO: /////////////////////////////
@@ -46,8 +50,8 @@ public:
         /**
         * Send the command to go straight.
         */
-        const float Kv = 1.2;
-        const float Kw = 1.4;
+        const float Kv = 2.0f;
+        const float Kw = 3.0f;
         float dx = target.x - pose.x;
         float dy = target.y - pose.y;
         float d = sqrt(pow(dx, 2) + pow(dy, 2));
@@ -65,11 +69,11 @@ public:
             v = Vmax;
         }
         
-        if(w<-Wmax){
-            w = -Wmax;
+        if(w<-STRAIGHT_WMAX){
+            w = -STRAIGHT_WMAX;
         }
-        else if(w>Wmax){
-            w = Wmax;
+        else if(w>STRAIGHT_WMAX){
+            w = STRAIGHT_WMAX;
         }
     
         return {0, v, w};
@@ -113,7 +117,7 @@ public:
         //return (fabs(angle_diff(pose.theta, target_heading)) < 0.07);
         
         // only consider the orientation but do not care the position
-        return (fabs(angle_diff(pose.theta, target.theta)) < 0.07);
+        return (fabs(angle_diff(pose.theta, target.theta)) < ROTATE2_THREAD);
         
 
     }
@@ -151,7 +155,7 @@ public:
         float dx = target.x - pose.x;
         float dy = target.y - pose.y;
         float target_heading = atan2(dy, dx);
-        return (fabs(angle_diff(target_heading, pose.theta)) < 0.10);
+        return (fabs(angle_diff(target_heading, pose.theta)) < ROTATE1_THREAD);
     }
 };
 
@@ -190,7 +194,8 @@ public:
             pose_xyt_t pose = currentPose();
 
             ///////  TODO: Add different states when adding maneuver controls ///////
-            if (state_ == Rotate){
+            if (state_ == Rotate)
+            { // R1
                 if(rotate_controller.target_reached(pose, target))
                 {   
                     std::cout << "Enter DRIVE state.\n";
@@ -205,7 +210,7 @@ public:
                 }
             }
             else if(state_ == TURN)
-            { 
+            { // R2
                 if(turn_controller.target_reached(pose, target))
                 {
 		            if(!assignNextTarget())
@@ -295,6 +300,8 @@ private:
     };
     
     pose_xyt_t odomToGlobalFrame_;      // transform to convert odometry into the global/map coordinates for navigating in a map
+                                        // Only works when getting the SLAM POSE
+
     PoseTrace  odomTrace_;              // trace of odometry for maintaining the offset estimate
     std::vector<pose_xyt_t> targets_;
 
@@ -333,6 +340,8 @@ private:
         odomToGlobalFrame_.theta = deltaTheta;
     }
     
+    // if no slam pose, then current pose is odometry pose
+    // if get slam pose, the current pose will be regulate by the slam pose
     pose_xyt_t currentPose(void)
     {
         assert(!odomTrace_.empty());

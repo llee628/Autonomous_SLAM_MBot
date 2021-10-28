@@ -6,7 +6,7 @@
 #include <unistd.h>
 #include <cmath>
 
-const float SQUARE_WIDTH = 0.7f;
+const float SQUARE_WIDTH = 1.0f;
 
 int main(int argc, char** argv)
 {std::cout << "here" <<std::endl;
