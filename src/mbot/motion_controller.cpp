@@ -20,7 +20,7 @@
 #define Vmax                        0.25
 #define W_STRAIGHT                  M_PI/2
 #define Wmax                        M_PI/4
-#define T_TARGET_THRED              0.05
+#define T_TARGET_THRED              0.03
 #define R1_TARGET_THRED             0.03
 #define R2_TARGET_THRED             0.07
 
@@ -368,6 +368,7 @@ int main(int argc, char** argv)
 
         if(controller.timesync_initialized()){
             mbot_motor_command_t cmd = controller.updateCommand();
+            std::cout << cmd.trans_v << "  " << cmd.angular_v << std::endl;
             lcmInstance.publish(MBOT_MOTOR_COMMAND_CHANNEL, &cmd);
         }
     }
