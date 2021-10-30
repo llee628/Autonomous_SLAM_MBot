@@ -115,3 +115,6 @@ void Mapping::increaseCellOdds(int x, int y, OccupancyGrid& map){
     }
 
 }
+
+
+

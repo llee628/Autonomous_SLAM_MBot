@@ -247,6 +247,8 @@ bool test_saved_poses(const std::string& mapFile, const std::string& posesFile, 
     
     for(int n = 0; n < numGoals; ++n)
     {
+        //if(n<=1){continue;}
+        //std::cout<<"Start "<<n+1<<" Test!"<<std::endl;
         poseIn >> start.x >> start.y >> goal.x >> goal.y >> shouldExist;
         
         robot_path_t path = timed_find_path(start, goal, planner, testName);
@@ -299,6 +301,7 @@ bool test_saved_poses(const std::string& mapFile, const std::string& posesFile, 
         // THIS IS WHERE WE PAUSE
         std::chrono::seconds sleep_duration(pauseTime);
         std::this_thread::sleep_for(sleep_duration);
+        //std::cout<<"Finish "<<n+1<<" Test!"<<std::endl;
     }
     
     if(numCorrect == numGoals)

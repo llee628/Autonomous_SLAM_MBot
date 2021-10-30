@@ -45,6 +45,7 @@ pose_xyt_t ParticleFilter::updateFilter(const pose_xyt_t&      odometry,
         auto proposal = computeProposalDistribution(prior);
         posterior_ = computeNormalizedPosterior(proposal, laser, map);
         posteriorPose_ = estimatePosteriorPose(posterior_);
+        //posteriorPose_ = top10estimatePosteriorPose(posterior_);
     }
     
     posteriorPose_.utime = odometry.utime;
@@ -188,7 +189,6 @@ pose_xyt_t ParticleFilter::estimatePosteriorPose(const std::vector<particle_t>& 
 {
     //////// TODO: Implement your method for computing the final pose estimate based on the posterior distribution
     pose_xyt_t pose;
-
     double xMean = 0.0;
     double yMean = 0.0;
     double cosThetaMean = 0.0;

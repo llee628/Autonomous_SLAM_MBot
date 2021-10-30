@@ -54,7 +54,6 @@ public:
     particle_t applyAction(const particle_t& sample);
     
 private:
-    
     ////////// TODO: Add private member variables needed for you implementation ///////////////////
     const float k1_;
     const float k2_;

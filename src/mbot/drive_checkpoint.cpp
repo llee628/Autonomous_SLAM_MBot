@@ -10,12 +10,12 @@ int main(int argc, char** argv)
 {std::cout << "here" <<std::endl;
 
     std::cout << "Commanding robot to drive around checkpoint map\n";
-    
+
     robot_path_t path;
     path.path.resize(9);
-    
+
     pose_xyt_t nextPose;
-    
+
     nextPose.x = 0.61f;
     nextPose.y = 0.0f;
     nextPose.theta = -M_PI_2;
@@ -25,12 +25,12 @@ int main(int argc, char** argv)
     nextPose.y = -0.61f;
     nextPose.theta = 0.0f;
     path.path[1] = nextPose;
-    
+
     nextPose.x = 1.22f;
     nextPose.y = -0.61f;
     nextPose.theta = M_PI_2;
     path.path[2] = nextPose;
-    
+
     nextPose.x = 1.22f;
     nextPose.y = 0.61f;
     nextPose.theta = 0.0f;
@@ -63,16 +63,16 @@ int main(int argc, char** argv)
     // Return to original heading after completing all circuits
 //    nextPose.theta = 0.0f;
 //    path.path.push_back(nextPose);
-    
+
     nextPose.x = 0.0f;
     nextPose.y = 0.0f;
     nextPose.theta = 0.0f;
     path.path.insert(path.path.begin(), nextPose);
-    
+
     path.path_length = path.path.size();
-    
+
     lcm::LCM lcmInstance(MULTICAST_URL);
-	std::cout << "publish to: " << CONTROLLER_PATH_CHANNEL << std::endl;
+    std::cout << "publish to: " << CONTROLLER_PATH_CHANNEL << std::endl;
     lcmInstance.publish(CONTROLLER_PATH_CHANNEL, &path);
     sleep(1);
 

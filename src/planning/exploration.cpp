@@ -11,13 +11,21 @@
 #include <unistd.h>
 #include <cassert>
 
-const float kReachedPositionThreshold = 0.05f;  // must get within this distance of a position for it to be explored
+#include <common/angle_functions.hpp>
+
+const float kReachedPositionThreshold = 0.07f;  // must get within this distance of a position for it to be explored
 
 // Define an equality operator for poses to allow direct comparison of two paths
 bool operator==(const pose_xyt_t& lhs, const pose_xyt_t& rhs)
 {
     return (lhs.x == rhs.x) && (lhs.y == rhs.y) && (lhs.theta == rhs.theta);
 }
+/*bool Exploration::isReachTarget(pose_xyt_t start, pose_xyt_t goal){
+    float dx = goal.x - start.x;
+    float dy = goal.y - goal.y;
+    float d = std::sqrt(dx*dx+dy*dy);
+    return d <= kReachedPositionThreshold;
+}*/
 
 
 Exploration::Exploration(int32_t teamNumber,
@@ -47,7 +55,7 @@ Exploration::Exploration(int32_t teamNumber,
     lcmInstance_->publish(EXPLORATION_STATUS_CHANNEL, &status);
     
     MotionPlannerParams params;
-    params.robotRadius = 0.2;
+    params.robotRadius = 0.11f;
     planner_.setParams(params);
 }
 
@@ -243,9 +251,34 @@ int8_t Exploration::executeExploringMap(bool initialize)
     *           explored more of the map.
     *       -- You will likely be able to see the frontier before actually reaching the end of the path leading to it.
     */
-    
+    //std::cout<<"Current Pose:("<<currentPose_.x<<","<<currentPose_.y<<")"<<std::endl;
+    //std::cout<<"Distance: "<< distance_between_points(Point<float>(currentTarget_.x, currentTarget_.y),
+                                                      //Point<float>(currentPose_.x, currentPose_.y))<<std::endl;
     /////////////////////////////// End student code ///////////////////////////////
-    
+    if(not isExploringMapInit){
+        planner_.setMap(currentMap_);
+        frontiers_ = find_map_frontiers(currentMap_, currentPose_);
+        currentPath_ = plan_path_to_frontier(frontiers_, currentPose_, currentMap_, planner_);
+        currentTarget_ = currentPath_.path.back();
+        // store currentPath_ to the Buffer
+        pathBuffer_.insert(pathBuffer_.end(), currentPath_.path.begin(), currentPath_.path.end());
+
+        isExploringMapInit = true;
+    }
+
+    else if(distance_between_points(Point<float>(currentTarget_.x, currentTarget_.y),
+                                    Point<float>(currentPose_.x, currentPose_.y)) <= kReachedPositionThreshold){
+        std::cout<<"Target reached!!!!!"<<std::endl;
+        std::cout<<"Start to a new Target"<<std::endl;
+        planner_.setMap(currentMap_);
+        frontiers_ = find_map_frontiers(currentMap_, currentPose_);
+        if(not frontiers_.empty()){
+        currentPath_ = plan_path_to_frontier(frontiers_, currentPose_, currentMap_, planner_);
+        currentTarget_ = currentPath_.path.back();
+        pathBuffer_.insert(pathBuffer_.end(), currentPath_.path.begin()+1, currentPath_.path.end());
+        }
+
+    }
     /////////////////////////   Create the status message    //////////////////////////
     exploration_status_t status;
     status.utime = utime_now();
@@ -279,6 +312,8 @@ int8_t Exploration::executeExploringMap(bool initialize)
             
         // If exploration is completed, then head home
         case exploration_status_t::STATUS_COMPLETE:
+            std::cout<<"___________________________"<<std::endl;
+            std::cout<<"Exploration Finished!"<<std::endl;
             return exploration_status_t::STATE_RETURNING_HOME;
             
         // If something has gone wrong and we can't reach all frontiers, then fail the exploration.
@@ -301,8 +336,53 @@ int8_t Exploration::executeReturningHome(bool initialize)
     *       (1) dist(currentPose_, targetPose_) < kReachedPositionThreshold  :  reached the home pose
     *       (2) currentPath_.path_length > 1  :  currently following a path to the home pose
     */
-    
+    std::cout<<"_________________________________"<<std::endl;
+    std::cout<<"Ok, you are going to return home!"<<std::endl;
+    if(not isReturningHomeInit){
 
+        //plan 1: use astar to plan
+        /*planner_.setMap(currentMap_);
+        currentPath_ = planner_.planPath(currentPose_, homePose_);
+        currentTarget_ = homePose_;*/
+
+        //plan 2: store way points and replay
+        std::reverse(pathBuffer_.begin(), pathBuffer_.end());
+        std::vector<pose_xyt_t> returnPath;
+        for(auto p: pathBuffer_){
+            pose_xyt_t node;
+            node.x = p.x;
+            node.y = p.y;
+            node.theta = angle_sum(p.theta, 3.1415926);
+            returnPath.push_back(node);
+        }
+        returnPath.push_back(homePose_);
+
+        /*pose_xyt_t pPrev;
+        bool setPrev = false;
+        for(auto p: pathBuffer_){
+
+            if(not setPrev){
+                setPrev = true;
+            }
+            else{
+                p.theta = std::atan2(p.y - pPrev.y, p.x - pPrev.x);
+            }
+            //what about theta and utime?
+            pPrev.x = p.x;
+            pPrev.y = p.y;
+            pPrev.theta = p.theta;
+        }*/
+
+        robot_path_t path;
+        path.utime = currentPose_.utime;
+        //path.path = pathBuffer_;
+        path.path = returnPath;
+        path.path_length = path.path.size();
+        currentPath_ = path;
+        currentTarget_ = homePose_;
+
+        isReturningHomeInit = true;
+    }
 
     /////////////////////////////// End student code ///////////////////////////////
     
@@ -315,7 +395,7 @@ int8_t Exploration::executeReturningHome(bool initialize)
     double distToHome = distance_between_points(Point<float>(homePose_.x, homePose_.y), 
                                                 Point<float>(currentPose_.x, currentPose_.y));
     // If we're within the threshold of home, then we're done.
-    if(distToHome <= kReachedPositionThreshold)
+    if(distToHome <= 0.03f)
     {
         status.status = exploration_status_t::STATUS_COMPLETE;
     }

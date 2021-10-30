@@ -10,12 +10,47 @@ ObstacleDistanceGrid::ObstacleDistanceGrid(void)
 {
 }
 
+void ObstacleDistanceGrid::initializeDistances(const OccupancyGrid& map){
+    int width = map.widthInCells();
+    int height = map.heightInCells();
+    for(int y=0;y<height;y++){
+        for(int x=0;x<width;x++){
+            if(map.logOdds(x,y) < 0){
+                distance(x, y) = -1.0f;
+            }
+            else{
+                distance(x, y) = 0.0f;
+            }
+        }
+    }
+}
 
 void ObstacleDistanceGrid::setDistances(const OccupancyGrid& map)
 {
     resetGrid(map);
-    
+    initializeDistances(map);
+
+    std::priority_queue<DistanceNode> searchQueue;
+    enqueue_obstacle_cells(*this, searchQueue);
     ///////////// TODO: Implement an algorithm to mark the distance to the nearest obstacle for every cell in the map.
+    //empty case
+    if(searchQueue.empty()){
+        int width = map.widthInCells();
+        int height = map.heightInCells();
+        cell_t cell;
+
+        for(cell.y=0;cell.y<height;cell.y++){
+            for(cell.x=0;cell.x<width;cell.x++){
+                distance(cell.x, cell.y) = 1.0e6*metersPerCell();
+            }
+        }
+    }
+    //
+    while(!searchQueue.empty()){
+        DistanceNode nextNode = searchQueue.top();
+        searchQueue.pop();
+        expand_node(nextNode, *this, searchQueue);
+    }
 }
 
 
@@ -43,4 +78,39 @@ void ObstacleDistanceGrid::resetGrid(const OccupancyGrid& map)
     height_ = map.heightInCells();
     
     cells_.resize(width_ * height_);
+
+}
+
+void ObstacleDistanceGrid::enqueue_obstacle_cells(ObstacleDistanceGrid& grid, std::priority_queue<DistanceNode>& searchQueue){
+    int width = grid.widthInCells();
+    int height = grid.heightInCells();
+    cell_t cell;
+
+    for(cell.y=0;cell.y<height;cell.y++){
+        for(cell.x=0;cell.x<width;cell.x++){
+            if(distance(cell.x, cell.y) == 0.0f){
+                //expand_node(DistanceNode(cell, 0.0f), grid, searchQueue);
+                searchQueue.push(DistanceNode(cell, 0.0f));
+            }
+        }
+    }
+    //otherwise set all cells of grid to all
+}
+void ObstacleDistanceGrid::expand_node(const DistanceNode& node, ObstacleDistanceGrid& grid, std::priority_queue<DistanceNode>& searchQueue){
+    //do an eight-way adjacent cell search
+    const int xDeltas[8] = {1, 1, 1, 0, 0, -1, -1, -1};
+    const int yDeltas[8] = {0, 1, -1, -1, 1, 1, -1, 0};
+    for(int i=0;i<8;i++){
+        cell_t adjacentCell(node.cell.x + xDeltas[i], node.cell.y + yDeltas[i]);
+        // make sure that the cell is in the grid
+        if(grid.isCellInGrid(adjacentCell.x, adjacentCell.y)){
+            if(grid(adjacentCell.x, adjacentCell.y) == -1.0f){
+                //DistanceNode adjacentNode(adjacentCell, node.distance + std::sqrt(xDeltas[i]*xDeltas[i] + yDeltas[i]*yDeltas[i]));
+                DistanceNode adjacentNode(adjacentCell, node.distance + 1.0f);
+                //do an eight-way searching
+                grid(adjacentCell.x, adjacentCell.y) = adjacentNode.distance * grid.metersPerCell();
+                searchQueue.push(adjacentNode);
+            }
+        }
+    }
 }
