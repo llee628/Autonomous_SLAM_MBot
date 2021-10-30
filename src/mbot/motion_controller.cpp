@@ -17,8 +17,12 @@
 #include <signal.h>
 #include "maneuver_controller.h"
 
-#define Vmax 0.75
-#define Wmax M_PI
+#define Vmax                        0.25
+#define W_STRAIGHT                  M_PI/2
+#define Wmax                        M_PI/4
+#define T_TARGET_THRED              0.05
+#define R1_TARGET_THRED             0.03
+#define R2_TARGET_THRED             0.07
 
 
 /////////////////////// TODO: /////////////////////////////
@@ -64,11 +68,11 @@ public:
             v = Vmax;
         }
         
-        if(w<-Wmax){
-            w = -Wmax;
+        if(w<-W_STRAIGHT){
+            w = -W_STRAIGHT;
         }
-        else if(w>Wmax){
-            w = Wmax;
+        else if(w>W_STRAIGHT){
+            w = W_STRAIGHT;
         }
     
         return {0, v, w};
@@ -76,7 +80,7 @@ public:
 
     virtual bool target_reached(const pose_xyt_t& pose, const pose_xyt_t& target)  override
     {
-        return ((fabs(pose.x - target.x) < 0.05) && (fabs(pose.y - target.y)  < 0.05));
+        return ((fabs(pose.x - target.x) < T_TARGET_THRED) && (fabs(pose.y - target.y)  < T_TARGET_THRED));
     }
 };
 
@@ -105,14 +109,9 @@ public:
     }
 
     virtual bool target_reached(const pose_xyt_t& pose, const pose_xyt_t& target)  override
-    {
-        //float dx = target.x - pose.x;
-        //float dy = target.y - pose.y;
-        //float target_heading = atan2(dy, dx);
-        //return (fabs(angle_diff(pose.theta, target_heading)) < 0.07);
-        
+    {   
         // only consider the orientation but do not care the position
-        return (fabs(angle_diff(pose.theta, target.theta)) < 0.07);
+        return (fabs(angle_diff(pose.theta, target.theta)) < R2_TARGET_THRED);
         
 
     }
@@ -150,7 +149,7 @@ public:
         float dx = target.x - pose.x;
         float dy = target.y - pose.y;
         float target_heading = atan2(dy, dx);
-        return (fabs(angle_diff(target_heading, pose.theta)) < 0.10);
+        return (fabs(angle_diff(target_heading, pose.theta)) < R1_TARGET_THRED);
     }
 };
 
