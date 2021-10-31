@@ -88,7 +88,7 @@ private:
     lidar_t currentScan_;
     pose_xyt_t      currentOdometry_;
     
-    pose_xyt_t initialPose_;
+    pose_xyt_t initialPose_;        // true pose if provided
     pose_xyt_t previousPose_;
     pose_xyt_t currentPose_;
     

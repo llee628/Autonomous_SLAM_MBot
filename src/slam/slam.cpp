@@ -88,13 +88,13 @@ void OccupancyGridSLAM::runSLAM(void)
             runSLAMIteration();
             currentTime_ = std::chrono::steady_clock::now();
             frequency_ += 1;
-            if (std::chrono::duration_cast<std::chrono::microseconds>(currentTime_ - startTime_).count()/1000000 > 0){
+            // if (std::chrono::duration_cast<std::chrono::microseconds>(currentTime_ - startTime_).count()/1000000 > 0){
                 
-                std::cout << "Num of Particles: " << numParticles_ << "  ";
-                std::cout << "Frequency: " << frequency_ << std::endl;
-                startTime_ = currentTime_;
-                frequency_ = 0;
-            }
+            //     std::cout << "Num of Particles: " << numParticles_ << "  ";
+            //     std::cout << "Frequency: " << frequency_ << std::endl;
+            //     startTime_ = currentTime_;
+            //     frequency_ = 0;
+            // }
         }
         // Otherwise, do a quick spin while waiting for data rather than using more complicated condition variable.
         else

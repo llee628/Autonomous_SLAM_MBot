@@ -10,8 +10,8 @@
 // #define K3      0.0001f
 // #define K4      0.00000001f
 
-#define K1      0.04f
-#define K2      0.04f
+#define K1      0.05f
+#define K2      0.0005f
 #define K3      0.0001f
 #define K4      0.00000001f
 
