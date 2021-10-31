@@ -191,7 +191,7 @@ public:
             if (state_ == Rotate){
                 if(rotate_controller.target_reached(pose, target))
                 {   
-                    std::cout << "Enter DRIVE state.\n";
+                    //std::cout << "Enter DRIVE state.\n";
                     cmd.trans_v = 0.0;
                     cmd.angular_v = 0.0;
                     state_ = DRIVE;
@@ -361,14 +361,20 @@ int main(int argc, char** argv)
     MotionController controller(&lcmInstance);
 
     signal(SIGINT, exit);
-
+    int clock = 0;
+    int count = 0;
     while(true)
     {
         lcmInstance.handleTimeout(50);  // update at 20Hz minimum
 
         if(controller.timesync_initialized()){
+            count += 1;
             mbot_motor_command_t cmd = controller.updateCommand();
-            std::cout << cmd.trans_v << "  " << cmd.angular_v << std::endl;
+            // if (count%50 == 0){
+            //     std::cout << clock << "  " << cmd.trans_v << "  " << cmd.angular_v << std::endl;
+            //     clock += 1;
+            // }
+
             lcmInstance.publish(MBOT_MOTOR_COMMAND_CHANNEL, &cmd);
         }
     }
