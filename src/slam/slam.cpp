@@ -25,6 +25,11 @@ OccupancyGridSLAM::OccupancyGridSLAM(int         numParticles,
 , lcm_(lcmComm)
 , mapUpdateCount_(0)
 {
+    // Time initialize
+    startTime_ = std::chrono::steady_clock::now();
+    frequency_ = 0;
+    numParticles_ = numParticles;
+
     // Confirm that the mode is valid -- mapping-only and localization-only are not specified
     assert(!(mappingOnlyMode && localizationOnlyMap.length() > 0));
     
@@ -74,8 +79,22 @@ void OccupancyGridSLAM::runSLAM(void)
         // If new data has arrived
         if(isReadyToUpdate())
         {
+            
+            
+            // std::cout << "Current duration: " << std::chrono::duration_cast<std::chrono::microseconds>(currentTime_ - startTime_).count();
+            // std::cout << std::endl;
+            
             // Then run an iteration of our SLAM algorithm
             runSLAMIteration();
+            currentTime_ = std::chrono::steady_clock::now();
+            frequency_ += 1;
+            if (std::chrono::duration_cast<std::chrono::microseconds>(currentTime_ - startTime_).count()/1000000 > 0){
+                
+                std::cout << "Num of Particles: " << numParticles_ << "  ";
+                std::cout << "Frequency: " << frequency_ << std::endl;
+                startTime_ = currentTime_;
+                frequency_ = 0;
+            }
         }
         // Otherwise, do a quick spin while waiting for data rather than using more complicated condition variable.
         else

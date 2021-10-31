@@ -12,6 +12,7 @@
 #include <lcm/lcm-cpp.hpp>
 #include <deque>
 #include <mutex>
+#include <chrono>
 
 /**
 * OccupancyGridSLAM runs on a thread and handles mapping.
@@ -99,6 +100,13 @@ private:
     int mapUpdateCount_;  // count so we only send the map occasionally, as it takes lots of bandwidth
     
     std::mutex dataMutex_;
+
+    // data for measure the frequency
+    std::chrono::steady_clock::time_point startTime_;
+    std::chrono::steady_clock::time_point currentTime_;
+    int frequency_; // Hz
+    int numParticles_;
+
 
     bool isReadyToUpdate      (void);
     void runSLAMIteration     (void);
