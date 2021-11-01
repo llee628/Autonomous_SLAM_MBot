@@ -11,6 +11,7 @@ ParticleFilter::ParticleFilter(int numParticles)
 {
     assert(kNumParticles_ > 1);
     posterior_.resize(kNumParticles_);
+    isRobotMove_ = false;
 }
 
 
@@ -38,6 +39,7 @@ pose_xyt_t ParticleFilter::updateFilter(const pose_xyt_t&      odometry,
     // Only update the particles if motion was detected. If the robot didn't move, then
     // obviously don't do anything.
     bool hasRobotMoved = actionModel_.updateAction(odometry);
+    isRobotMove_ = hasRobotMoved;
     
     if(hasRobotMoved)
     {

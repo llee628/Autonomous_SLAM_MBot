@@ -13,6 +13,7 @@
 #include <deque>
 #include <mutex>
 #include <chrono>
+#include <common/angle_functions.hpp>
 
 /**
 * OccupancyGridSLAM runs on a thread and handles mapping.
@@ -107,6 +108,12 @@ private:
     int frequency_; // Hz
     int numParticles_;
 
+    // data for measure RMS error
+    float square_error_x_;
+    float square_error_y_;
+    float square_error_theta_;
+    int data_num_;
+
 
     bool isReadyToUpdate      (void);
     void runSLAMIteration     (void);
@@ -118,6 +125,10 @@ private:
     void initializePosesIfNeeded(void);
     void updateLocalization   (void);
     void updateMap            (void);
+
+    // calculate square errors
+    void doSquareError(pose_xyt_t initialPose, pose_xyt_t currentPose);
+    void doRMS(pose_xyt_t currentPose);
 };
 
 #endif // SLAM_OCCUPANCY_GRID_SLAM_HPP

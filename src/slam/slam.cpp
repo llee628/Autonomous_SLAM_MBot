@@ -30,6 +30,13 @@ OccupancyGridSLAM::OccupancyGridSLAM(int         numParticles,
     frequency_ = 0;
     numParticles_ = numParticles;
 
+    // Initialize data for RMS error
+    square_error_x_ = 0.0f;
+    square_error_y_ = 0.0f;
+    square_error_theta_ = 0.0f;
+    data_num_ = 0;
+
+
     // Confirm that the mode is valid -- mapping-only and localization-only are not specified
     assert(!(mappingOnlyMode && localizationOnlyMap.length() > 0));
     
@@ -280,7 +287,17 @@ void OccupancyGridSLAM::updateLocalization(void)
         else{
             currentPose_  = filter_.updateFilter(currentOdometry_, currentScan_, map_);
         }
-        
+
+        if (!filter_.isRobotMove()){
+            doRMS(currentPose_);
+        }
+
+        // if (filter_.isRobotMove()){
+        //     doSquareError(initialPose_, currentPose_);
+        // }
+        // else {
+        //     doRMS();
+        // }
         auto particles = filter_.particles();
 
         lcm_.publish(SLAM_POSE_CHANNEL, &currentPose_);
@@ -311,4 +328,41 @@ void OccupancyGridSLAM::updateMap(void)
     }
 
     ++mapUpdateCount_;
+}
+
+void OccupancyGridSLAM::doSquareError(pose_xyt_t initialPose, pose_xyt_t currentPose){
+    // std::cout << "initialPose x: " << initialPose.x << " ";
+    // std::cout << "currentPose x: " << currentPose.x << std::endl;
+    // std::cout << "initialPose y: " << initialPose.y << " ";
+    // std::cout << "currentPose y: " << currentPose.y << std::endl;
+    // std::cout << "initialPose theta: " << initialPose.theta << " ";
+    // std::cout << "currentPose theta: " << currentPose.theta << std::endl;
+
+    float x_error = currentPose.x - initialPose.x;
+    float y_error = currentPose.y - initialPose.y;
+    float theta_error = angle_diff(currentPose.theta, initialPose.theta);
+
+    square_error_x_ += pow(x_error, 2);
+    square_error_y_ += pow(y_error, 2);
+    square_error_theta_ += pow(theta_error, 2);
+    data_num_ += 1;
+}
+
+void OccupancyGridSLAM::doRMS(pose_xyt_t currentPose){
+    float square_error_x = pow(currentPose.x, 2);
+    float square_error_y = pow(currentPose.y, 2);
+    float square_error_theta = pow(currentPose.theta, 2);
+
+    float mean_x = square_error_x;
+    float mean_y = square_error_y;
+    float mean_theta = square_error_theta;
+
+    float RMS_x = sqrt(mean_x);
+    float RMS_y = sqrt(mean_y);
+    float RMS_theta = sqrt(mean_theta);
+
+    std::cout << "RMS of x: " << RMS_x;
+    std::cout << " RMS of y: " << RMS_y;
+    std::cout << " RMS of theta: " << RMS_theta;
+    std::cout << std::endl;
 }

@@ -76,6 +76,8 @@ public:
     * particles retrieves the posterior set of particles being used by the algorithm.
     */
     particles_t particles(void) const;
+
+    bool isRobotMove(){return isRobotMove_;}
     
 private:
     
@@ -86,6 +88,8 @@ private:
     SensorModel sensorModel_;   // Sensor model to compute particle weights
     
     int kNumParticles_;         // Number of particles to use for estimating the pose
+
+    bool isRobotMove_;
     
     std::vector<particle_t> resamplePosteriorDistribution(void);
     std::vector<particle_t> computeProposalDistribution(const std::vector<particle_t>& prior);
