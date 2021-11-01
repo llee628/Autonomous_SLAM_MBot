@@ -5,6 +5,7 @@
 #include <unistd.h>
 #include <cassert>
 #include <chrono>
+#include <fstream>
 
 OccupancyGridSLAM::OccupancyGridSLAM(int         numParticles,
                                      int8_t      hitOddsIncrease,
@@ -288,9 +289,13 @@ void OccupancyGridSLAM::updateLocalization(void)
             currentPose_  = filter_.updateFilter(currentOdometry_, currentScan_, map_);
         }
 
-        if (!filter_.isRobotMove()){
-            doRMS(currentPose_);
+        if (filter_.isRobotMove()){
+            doDistanceError(currentOdometry_, currentPose_);
         }
+
+        // if (!filter_.isRobotMove()){
+        //     doRMS(currentPose_);
+        // }
 
         // if (filter_.isRobotMove()){
         //     doSquareError(initialPose_, currentPose_);
@@ -365,4 +370,27 @@ void OccupancyGridSLAM::doRMS(pose_xyt_t currentPose){
     std::cout << " RMS of y: " << RMS_y;
     std::cout << " RMS of theta: " << RMS_theta;
     std::cout << std::endl;
+}
+
+void OccupancyGridSLAM::doDistanceError(pose_xyt_t left, pose_xyt_t right){
+    // static int numOfCall = 0;
+    // numOfCall += 1;
+    // if (numOfCall == 1){
+    //     std::cout << "Time    " << "distance" << std::endl;
+    // }
+
+    std::ofstream myfile ("data/distance_error.txt", std::ios_base::app);
+    
+    float error_x = right.x - left.x;
+    float error_y = right.y - left.y;
+    float distance_error = sqrt(pow(error_x, 2) + pow(error_y, 2));
+
+    if (myfile.is_open()){
+        myfile << distance_error;
+        myfile << std::endl;
+        myfile.close();
+    }
+    else {
+        std::cout << "Unable to open file" << std::endl;
+    }
 }

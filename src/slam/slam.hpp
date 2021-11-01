@@ -126,9 +126,11 @@ private:
     void updateLocalization   (void);
     void updateMap            (void);
 
-    // calculate square errors
+    // calculate errors
     void doSquareError(pose_xyt_t initialPose, pose_xyt_t currentPose);
     void doRMS(pose_xyt_t currentPose);
+    void doDistanceError(pose_xyt_t left, pose_xyt_t right);
+
 };
 
 #endif // SLAM_OCCUPANCY_GRID_SLAM_HPP
