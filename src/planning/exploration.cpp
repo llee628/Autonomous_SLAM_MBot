@@ -55,7 +55,7 @@ Exploration::Exploration(int32_t teamNumber,
     lcmInstance_->publish(EXPLORATION_STATUS_CHANNEL, &status);
     
     MotionPlannerParams params;
-    //params.robotRadius = 0.11f;
+    // params.robotRadius = 0.13f;
     planner_.setParams(params);
 }
 
@@ -338,48 +338,32 @@ int8_t Exploration::executeReturningHome(bool initialize)
     */
     std::cout<<"_________________________________"<<std::endl;
     std::cout<<"Ok, you are going to return home!"<<std::endl;
-    if(not isReturningHomeInit){
+    if(!isReturningHomeInit){
 
         //plan 1: use astar to plan
-        /*planner_.setMap(currentMap_);
+        planner_.setMap(currentMap_);
         currentPath_ = planner_.planPath(currentPose_, homePose_);
-        currentTarget_ = homePose_;*/
+        currentTarget_ = homePose_;
 
         //plan 2: store way points and replay
-        std::reverse(pathBuffer_.begin(), pathBuffer_.end());
-        std::vector<pose_xyt_t> returnPath;
-        for(auto p: pathBuffer_){
-            pose_xyt_t node;
-            node.x = p.x;
-            node.y = p.y;
-            node.theta = angle_sum(p.theta, 3.1415926);
-            returnPath.push_back(node);
-        }
-        returnPath.push_back(homePose_);
+        // std::reverse(pathBuffer_.begin(), pathBuffer_.end());
+        // std::vector<pose_xyt_t> returnPath;
+        // for(auto p: pathBuffer_){
+        //     pose_xyt_t node;
+        //     node.x = p.x;
+        //     node.y = p.y;
+        //     node.theta = angle_sum(p.theta, 3.1415926);
+        //     returnPath.push_back(node);
+        // }
+        // returnPath.push_back(homePose_);
 
-        /*pose_xyt_t pPrev;
-        bool setPrev = false;
-        for(auto p: pathBuffer_){
-
-            if(not setPrev){
-                setPrev = true;
-            }
-            else{
-                p.theta = std::atan2(p.y - pPrev.y, p.x - pPrev.x);
-            }
-            //what about theta and utime?
-            pPrev.x = p.x;
-            pPrev.y = p.y;
-            pPrev.theta = p.theta;
-        }*/
-
-        robot_path_t path;
-        path.utime = currentPose_.utime;
-        //path.path = pathBuffer_;
-        path.path = returnPath;
-        path.path_length = path.path.size();
-        currentPath_ = path;
-        currentTarget_ = homePose_;
+        // robot_path_t path;
+        // path.utime = currentPose_.utime;
+        // //path.path = pathBuffer_;
+        // path.path = returnPath;
+        // path.path_length = path.path.size();
+        // currentPath_ = path;
+        // currentTarget_ = homePose_;
 
         isReturningHomeInit = true;
     }

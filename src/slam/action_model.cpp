@@ -5,7 +5,7 @@
 #include <cmath>
 #include <iostream>
 
-#define K1      0.05f
+#define K1      0.03f
 #define K2      0.003f
 #define K3      0.0001f
 #define K4      0.00000001f
