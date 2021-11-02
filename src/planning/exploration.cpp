@@ -55,7 +55,7 @@ Exploration::Exploration(int32_t teamNumber,
     lcmInstance_->publish(EXPLORATION_STATUS_CHANNEL, &status);
     
     MotionPlannerParams params;
-    params.robotRadius = 0.11f;
+    //params.robotRadius = 0.11f;
     planner_.setParams(params);
 }
 

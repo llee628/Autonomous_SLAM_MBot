@@ -139,11 +139,11 @@ robot_path_t plan_path_to_frontier(const std::vector<frontier_t>& frontiers,
     const int xDeltas[] = { -1, 1, 0, 0 };
     const int yDeltas[] = { 0, 0, 1, -1 };
 
-    while(not cellQueue.empty()){
+    while(!cellQueue.empty()){
         Point<int> nextCell = cellQueue.front();
         cellQueue.pop();
         //std::cout<<"("<<nextCell.x<<","<<nextCell.y<<") :"<<planner.obstacleDistances()(nextCell.x, nextCell.y)<<std::endl;
-        if(planner.obstacleDistances()(nextCell.x, nextCell.y) > 2*0.09f){
+        if(planner.obstacleDistances()(nextCell.x, nextCell.y) > 2*0.11f){
             //planner.obstacleDistances()(nextCell.x, nextCell.y) > 0.11f
             //hard code
             //std::cout<<"Temp Target Gird: ("<<nextCell.x<<","<<nextCell.y<<")"<<std::endl;
