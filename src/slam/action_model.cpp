@@ -5,8 +5,8 @@
 #include <cmath>
 #include <iostream>
 
-#define K1      0.00000001f
-#define K2      0.0001f
+#define K1      0.05f
+#define K2      0.0005f
 #define K3      0.0001f
 #define K4      0.00000001f
 
@@ -51,14 +51,14 @@ bool ActionModel::updateAction(const pose_xyt_t& odometry)
 
     if (moved_){
         // Simple action mode
-        // rot1Std_ = std::sqrt(k1_ * std::abs(rot1_));
-        // transStd_ = std::sqrt(k2_ * std::abs(trans_));
-        // rot2Std_ = std::sqrt(k1_ * std::abs(rot2_));
+        rot1Std_ = std::sqrt(k1_ * std::abs(rot1_));
+        transStd_ = std::sqrt(k2_ * std::abs(trans_));
+        rot2Std_ = std::sqrt(k1_ * std::abs(rot2_));
 
         // more complicated action mode
-        rot1Std_ = std::sqrt(k1_ * rot1_ * rot1_ + k2_ * trans_ * trans_);
-        transStd_ = std::sqrt(k3_ * trans_ * trans_ + k4_ * rot1_ * rot1_ + k4_ * rot2_ * rot2_);
-        rot2Std_ = std::sqrt(k1_ * rot2_ * rot2_ + k2_ * trans_ * trans_);
+        // rot1Std_ = std::sqrt(k1_ * rot1_ * rot1_ + k2_ * trans_ * trans_);
+        // transStd_ = std::sqrt(k3_ * trans_ * trans_ + k4_ * rot1_ * rot1_ + k4_ * rot2_ * rot2_);
+        // rot2Std_ = std::sqrt(k1_ * rot2_ * rot2_ + k2_ * trans_ * trans_);
     }
 
     trans_ *= direction;

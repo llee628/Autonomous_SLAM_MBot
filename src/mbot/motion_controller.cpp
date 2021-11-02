@@ -17,8 +17,12 @@
 #include <signal.h>
 #include "maneuver_controller.h"
 
-#define Vmax 0.75
-#define Wmax M_PI
+#define Vmax                    0.25
+#define STRAIGHT_WMAX           M_PI/2
+#define Wmax                    M_PI/4
+#define STRAIGHT_THREAD         0.02       // 0.05
+#define ROTATE1_THREAD          0.03       //0.01
+#define ROTATE2_THREAD          0.07    
 
 
 /////////////////////// TODO: /////////////////////////////
@@ -45,8 +49,8 @@ public:
         /**
         * Send the command to go straight.
         */
-        const float Kv = 1.5;
-        const float Kw = 1.6;
+        const float Kv = 2.0f;
+        const float Kw = 3.0f;
         float dx = target.x - pose.x;
         float dy = target.y - pose.y;
         float d = sqrt(pow(dx, 2) + pow(dy, 2));
@@ -64,11 +68,11 @@ public:
             v = Vmax;
         }
         
-        if(w<-Wmax){
-            w = -Wmax;
+        if(w<-STRAIGHT_WMAX){
+            w = -STRAIGHT_WMAX;
         }
-        else if(w>Wmax){
-            w = Wmax;
+        else if(w>STRAIGHT_WMAX){
+            w = STRAIGHT_WMAX;
         }
     
         return {0, v, w};
@@ -76,7 +80,7 @@ public:
 
     virtual bool target_reached(const pose_xyt_t& pose, const pose_xyt_t& target)  override
     {
-        return ((fabs(pose.x - target.x) < 0.05) && (fabs(pose.y - target.y)  < 0.05));
+        return ((fabs(pose.x - target.x) < STRAIGHT_THREAD) && (fabs(pose.y - target.y)  < STRAIGHT_THREAD));
     }
 };
 
@@ -89,7 +93,7 @@ public:
         /**
         * Send the command to turn.
         */
-        const float Kw = 2.0;
+        const float Kw = 1.5;
         float beta = angle_diff(target.theta, pose.theta);
         float w = Kw * beta;
         
@@ -112,7 +116,7 @@ public:
         //return (fabs(angle_diff(pose.theta, target_heading)) < 0.07);
         
         // only consider the orientation but do not care the position
-        return (fabs(angle_diff(pose.theta, target.theta)) < 0.07);
+        return (fabs(angle_diff(pose.theta, target.theta)) < ROTATE2_THREAD);
         
 
     }
@@ -127,7 +131,7 @@ public:
         /**
         * Send the command to turn.
         */
-        const float Kw = 2.0;
+        const float Kw = 1.5;
         float dx = target.x - pose.x;
         float dy = target.y - pose.y;
         float target_heading = atan2(dy, dx);
@@ -150,7 +154,7 @@ public:
         float dx = target.x - pose.x;
         float dy = target.y - pose.y;
         float target_heading = atan2(dy, dx);
-        return (fabs(angle_diff(target_heading, pose.theta)) < 0.10);
+        return (fabs(angle_diff(target_heading, pose.theta)) < ROTATE1_THREAD);
     }
 };
 
