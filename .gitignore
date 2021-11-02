@@ -284,4 +284,4 @@ srp_md/src/srp_md/ui/pyqt_format.py
 *.code-workspace
 
 # Botlab data folder
-botlab-data
+/data
