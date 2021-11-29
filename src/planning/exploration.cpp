@@ -55,7 +55,7 @@ Exploration::Exploration(int32_t teamNumber,
     lcmInstance_->publish(EXPLORATION_STATUS_CHANNEL, &status);
     
     MotionPlannerParams params;
-    // params.robotRadius = 0.13f;
+    params.robotRadius = 0.13f;
     planner_.setParams(params);
 }
 
@@ -251,11 +251,8 @@ int8_t Exploration::executeExploringMap(bool initialize)
     *           explored more of the map.
     *       -- You will likely be able to see the frontier before actually reaching the end of the path leading to it.
     */
-    //std::cout<<"Current Pose:("<<currentPose_.x<<","<<currentPose_.y<<")"<<std::endl;
-    //std::cout<<"Distance: "<< distance_between_points(Point<float>(currentTarget_.x, currentTarget_.y),
-                                                      //Point<float>(currentPose_.x, currentPose_.y))<<std::endl;
-    /////////////////////////////// End student code ///////////////////////////////
-    if(not isExploringMapInit){
+    
+    if(!isExploringMapInit){
         planner_.setMap(currentMap_);
         frontiers_ = find_map_frontiers(currentMap_, currentPose_);
         currentPath_ = plan_path_to_frontier(frontiers_, currentPose_, currentMap_, planner_);
@@ -272,13 +269,17 @@ int8_t Exploration::executeExploringMap(bool initialize)
         std::cout<<"Start to a new Target"<<std::endl;
         planner_.setMap(currentMap_);
         frontiers_ = find_map_frontiers(currentMap_, currentPose_);
-        if(not frontiers_.empty()){
-        currentPath_ = plan_path_to_frontier(frontiers_, currentPose_, currentMap_, planner_);
-        currentTarget_ = currentPath_.path.back();
-        pathBuffer_.insert(pathBuffer_.end(), currentPath_.path.begin()+1, currentPath_.path.end());
+        if(!frontiers_.empty()){
+            currentPath_ = plan_path_to_frontier(frontiers_, currentPose_, currentMap_, planner_);
+            currentTarget_ = currentPath_.path.back();
+            pathBuffer_.insert(pathBuffer_.end(), currentPath_.path.begin()+1, currentPath_.path.end());
         }
 
     }
+
+    /////////////////////////////// End student code ///////////////////////////////
+
+
     /////////////////////////   Create the status message    //////////////////////////
     exploration_status_t status;
     status.utime = utime_now();

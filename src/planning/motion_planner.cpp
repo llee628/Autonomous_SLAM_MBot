@@ -50,28 +50,27 @@ robot_path_t MotionPlanner::planPath(const pose_xyt_t& start, const pose_xyt_t& 
 
 bool MotionPlanner::isValidGoal(const pose_xyt_t& goal) const
 {
+    // prev_goal not initialized
+
     float dx = goal.x - prev_goal.x, dy = goal.y - prev_goal.y;
     float distanceFromPrev = std::sqrt(dx * dx + dy * dy);
 
     //if there's more than 1 frontier, don't go to a target that is within a robot diameter of the current pose
-    //std::cout<<"frontiers:"<<num_frontiers<<"distance:"<<distanceFromPrev<<"min:"<<2 * searchParams_.minDistanceToObstacle<<std::endl;
-
     if(num_frontiers != 1 && distanceFromPrev < 2 * searchParams_.minDistanceToObstacle) return false;
-    std::cout<<"Not false in first if statement"<<std::endl;
+    
     auto goalCell = global_position_to_grid_cell(Point<double>(goal.x, goal.y), distances_);
-    std::cout<<"is Valid Target: ("<<goalCell.x<<","<<goalCell.y<<")"<<std::endl;
-    std::cout<<"TargetObstacleDistance: "<<distances_(goalCell.x, goalCell.y)<<std::endl;
-    std::cout<<params_.robotRadius<<std::endl;
+
     // A valid goal is in the grid
     if(distances_.isCellInGrid(goalCell.x, goalCell.y))
     {
         // And is far enough from obstacles that the robot can physically occupy the space
         // Add an extra cell to account for discretization error and make motion a little safer by not trying to
         // completely snuggle up against the walls in the motion plan
-        // return distances_(goalCell.x, goalCell.y) > params_.robotRadius;
-        return distances_(goalCell.x, goalCell.y) > 0.0f;
+        
+        return distances_(goalCell.x, goalCell.y) > params_.robotRadius;
+        // return distances_(goalCell.x, goalCell.y) > 0.0f;
     }
-    std::cout<<"Not false in 2 if statement"<<std::endl;
+
     // A goal must be in the map for the robot to reach it
     return false;
 }

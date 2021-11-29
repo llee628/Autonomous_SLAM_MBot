@@ -101,7 +101,9 @@ robot_path_t plan_path_to_frontier(const std::vector<frontier_t>& frontiers,
     */
     std::cout<<"started to find path"<<std::endl;
     robot_path_t emptyPath;
-    //the center of each frontier
+    
+    ////////////////////////////////////// begin path_to_frontier  //////////////////////////////////////
+    // the center of each frontier
     std::vector<Point<float>> centerCells;
     for(auto f: frontiers){
         Point<float> center(0.0f,0.0f);
@@ -113,6 +115,7 @@ robot_path_t plan_path_to_frontier(const std::vector<frontier_t>& frontiers,
         center.y /= f.cells.size();
         centerCells.push_back(center);
     }
+    
     std::vector<float>distToRobot;
     for(auto c:centerCells){
         float dx = c.x - robotPose.x;
@@ -120,12 +123,18 @@ robot_path_t plan_path_to_frontier(const std::vector<frontier_t>& frontiers,
         float distance = std::sqrt(dx*dx+dy*dy);
         distToRobot.push_back(distance);
     }
+
+    // weird, maybe results in what is not expected
     int idx = std::distance(distToRobot.begin(),std::min_element(distToRobot.begin(), distToRobot.end()));
 
     pose_xyt_t frontier_goal;
     frontier_goal.x = centerCells.at(idx).x;
     frontier_goal.y = centerCells.at(idx).y;
     std::cout<<"Frontier_Goal: ("<<frontier_goal.x<<","<<frontier_goal.y<<")"<<std::endl;
+
+    /////////////////////////////////////// end path_to_frontier ///////////////////////////
+
+    //////////////////////////////////////  start nearest_navigable_cell  /////////////////////////
     //find the nearest free space of the frontier_goal;
 
     pose_xyt_t robotGoal;
@@ -170,6 +179,10 @@ robot_path_t plan_path_to_frontier(const std::vector<frontier_t>& frontiers,
 
     std::cout<<"Temp Target: ("<<robotGoal.x<<","<<robotGoal.y<<")"<<std::endl;
     std::cout<<"TargetObstacleDistance: "<<planner.obstacleDistances()(robotGoal.x, robotGoal.y)<<std::endl;
+
+    ////////////////////////////  start search_to_nearest_free_space  ///////////////////////////////////////
+    
+    // perform A*
     emptyPath = planner.planPath(robotPose, robotGoal);
     //emptyPath = planner.planPath(robotPose, frontier_goal);
     //also can find the nearest cell on free space;
@@ -179,7 +192,7 @@ robot_path_t plan_path_to_frontier(const std::vector<frontier_t>& frontiers,
 
 bool is_frontier_cell(int x, int y, const OccupancyGrid& map)
 {
-    // A cell if a frontier if it has log-odds 0 and a neighbor has log-odds < 0
+    // A cell is a frontier if it has log-odds 0 and a neighbor has log-odds < 0
     
     // A cell must be in the grid and must have log-odds 0 to even be considered as a frontier
     if(!map.isCellInGrid(x, y) || (map(x, y) != 0))
